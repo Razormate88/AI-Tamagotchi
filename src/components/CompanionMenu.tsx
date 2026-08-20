@@ -1,10 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { AppSettings, PetSizePreset } from '../types/settings';
-import { ContextMenuPosition } from '../types/desktop';
 import { PET_SIZE_PRESETS } from '../desktop/petSizes';
 
-interface CompanionMenuProps {
-  position: ContextMenuPosition;
+export interface CompanionMenuProps {
   settings: AppSettings;
   onToggleAlwaysOnTop: () => void;
   onChangeSizePreset: (preset: PetSizePreset) => void;
@@ -12,11 +10,9 @@ interface CompanionMenuProps {
   onResetPosition: () => void;
   onHidePet: () => void;
   onOpenAbout: () => void;
-  onClose: () => void;
 }
 
 export const CompanionMenu: React.FC<CompanionMenuProps> = ({
-  position,
   settings,
   onToggleAlwaysOnTop,
   onChangeSizePreset,
@@ -24,46 +20,9 @@ export const CompanionMenu: React.FC<CompanionMenuProps> = ({
   onResetPosition,
   onHidePet,
   onOpenAbout,
-  onClose,
 }) => {
-  const menuRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('mousedown', handleClickOutside);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [onClose]);
-
-  // Adjust menu position so it doesn't overflow the viewport
-  const style: React.CSSProperties = {
-    left: Math.min(position.x, Math.max(10, window.innerWidth - 180)),
-    top: Math.min(position.y, Math.max(10, window.innerHeight - 260)),
-  };
-
   return (
-    <div
-      ref={menuRef}
-      className="companion-menu"
-      style={style}
-      role="menu"
-      aria-label="Companion Controls"
-    >
+    <div className="companion-menu" role="menu" aria-label="Companion Controls">
       <div className="menu-header">Companion Menu</div>
 
       <button

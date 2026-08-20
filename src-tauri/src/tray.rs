@@ -42,6 +42,9 @@ pub fn setup_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
                     }
                     "hide_pet" => {
                         let _ = window.hide();
+                        if let Some(menu) = app.get_webview_window("companion-menu") {
+                            let _ = menu.hide();
+                        }
                     }
                     "toggle_always_on_top" => {
                         if let Ok(current) = window.is_always_on_top() {
@@ -51,6 +54,9 @@ pub fn setup_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
                         }
                     }
                     "reset_position" => {
+                        if let Some(menu) = app.get_webview_window("companion-menu") {
+                            let _ = menu.hide();
+                        }
                         let _ = crate::commands::reset_window_position_authoritative(&window);
                     }
                     "quit" => {
@@ -74,6 +80,9 @@ pub fn setup_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
                     if let Ok(is_visible) = window.is_visible() {
                         if is_visible {
                             let _ = window.hide();
+                            if let Some(menu) = app.get_webview_window("companion-menu") {
+                                let _ = menu.hide();
+                            }
                         } else {
                             let _ = crate::commands::show_pet_authoritative(&window);
                         }

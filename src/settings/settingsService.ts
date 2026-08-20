@@ -1,6 +1,6 @@
 import { getSetting, setSetting } from '../persistence/settingsRepository';
 import { AppSettings, DEFAULT_APP_SETTINGS, PetSizePreset } from '../types/settings';
-import { setWindowAlwaysOnTop, setAutostartEnabled } from '../desktop/windowControl';
+import { setPetWindowAlwaysOnTop, setAutostartEnabled } from '../desktop/windowControl';
 import { applyPetSizePreset } from '../desktop/petSizes';
 
 const SETTINGS_KEY = 'app_preferences';
@@ -36,7 +36,7 @@ export class SettingsService {
    * Updates always-on-top setting and synchronizes with native window.
    */
   public static async setAlwaysOnTop(alwaysOnTop: boolean): Promise<void> {
-    await setWindowAlwaysOnTop(alwaysOnTop);
+    await setPetWindowAlwaysOnTop(alwaysOnTop);
     this.currentSettings.alwaysOnTop = alwaysOnTop;
     await setSetting(SETTINGS_KEY, this.currentSettings);
   }

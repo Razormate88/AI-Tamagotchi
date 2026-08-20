@@ -28,11 +28,21 @@ pub fn run() {
                 commands::log_window_diagnostics("app_setup", &window);
                 let _ = commands::show_pet_authoritative(&window);
             }
+            if let Some(menu) = app.get_webview_window("companion-menu") {
+                let _ = menu.hide();
+            }
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             commands::reset_window_position,
             commands::show_pet,
+            commands::hide_pet,
+            commands::open_companion_menu,
+            commands::toggle_companion_menu,
+            commands::hide_companion_menu,
+            commands::get_pet_always_on_top,
+            commands::set_pet_always_on_top,
+            commands::set_pet_size,
             commands::report_frontend_stage,
             commands::report_frontend_error
         ])

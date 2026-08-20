@@ -1,22 +1,19 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { CreatureRenderer } from '../creature/CreatureRenderer';
-import { CompanionMenu } from '../components/CompanionMenu';
-import { AboutModal } from '../components/AboutModal';
 import { ReactionBubble } from '../components/ReactionBubble';
 import { usePetInteraction } from '../desktop/usePetInteraction';
 import { initializeDatabase } from '../persistence/database';
 import { getOrCreatePrimaryPet, updatePetLastSeen } from '../persistence/petRepository';
 import { SettingsService } from '../settings/settingsService';
 import {
-  hidePetWindow,
-  resetWindowPosition,
   subscribeToTrayEvents,
   checkAutostartEnabled,
-  getWindowAlwaysOnTop,
+  getPetWindowAlwaysOnTop,
+  toggleCompanionMenu,
 } from '../desktop/windowControl';
 import { reportStage, reportError } from '../desktop/diagnostics';
 import { PetProfile, SpeciesIdentity } from '../types/pet';
-import { AppSettings, DEFAULT_APP_SETTINGS, PetSizePreset } from '../types/settings';
+import { AppSettings, DEFAULT_APP_SETTINGS } from '../types/settings';
 import { ContextMenuPosition } from '../types/desktop';
 import speciesBlueprint from '../../brain/species/identity.json';
 
@@ -24,9 +21,7 @@ const species: SpeciesIdentity = speciesBlueprint as SpeciesIdentity;
 
 export const App: React.FC = () => {
   const [petProfile, setPetProfile] = useState<PetProfile | null>(null);
-  const [settings, setSettings] = useState<AppSettings>(DEFAULT_APP_SETTINGS);
-  const [contextMenuPos, setContextMenuPos] = useState<ContextMenuPosition | null>(null);
-  const [isAboutOpen, setIsAboutOpen] = useState<boolean>(false);
+  const [, setSettings] = useState<AppSettings>(DEFAULT_APP_SETTINGS);
   const [squishTrigger, setSquishTrigger] = useState<number>(0);
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const [initError, setInitError] = useState<string | null>(null);
@@ -44,7 +39,7 @@ export const App: React.FC = () => {
 
         // Check native autostart and always-on-top states
         const autostart = await checkAutostartEnabled();
-        const alwaysOnTop = await getWindowAlwaysOnTop();
+        const alwaysOnTop = await getPetWindowAlwaysOnTop();
 
         if (mounted) {
           setPetProfile(profile);
@@ -97,7 +92,9 @@ export const App: React.FC = () => {
   }, [petProfile]);
 
   const handleOpenContextMenu = useCallback((pos: ContextMenuPosition) => {
-    setContextMenuPos(pos);
+    toggleCompanionMenu(pos.x, pos.y).catch((err) =>
+      console.error('Failed to toggle companion menu:', err)
+    );
   }, []);
 
   const { onPointerDown, onPointerMove, onPointerUp, onContextMenu } = usePetInteraction({
@@ -105,49 +102,10 @@ export const App: React.FC = () => {
     onOpenContextMenu: handleOpenContextMenu,
   });
 
-  const handleToggleAlwaysOnTop = async () => {
-    const nextVal = !settings.alwaysOnTop;
-    try {
-      await SettingsService.setAlwaysOnTop(nextVal);
-      setSettings((prev) => ({ ...prev, alwaysOnTop: nextVal }));
-    } catch (err) {
-      console.error('Failed to toggle always on top:', err);
-    }
-  };
-
-  const handleChangeSizePreset = async (preset: PetSizePreset) => {
-    try {
-      await SettingsService.setPetSizePreset(preset);
-      setSettings((prev) => ({ ...prev, petSizePreset: preset }));
-    } catch (err) {
-      console.error('Failed to change pet size preset:', err);
-    }
-  };
-
-  const handleToggleAutostart = async () => {
-    const nextVal = !settings.autostart;
-    try {
-      await SettingsService.setAutostart(nextVal);
-      setSettings((prev) => ({ ...prev, autostart: nextVal }));
-    } catch (err) {
-      console.error('Failed to toggle autostart:', err);
-    }
-  };
-
-  const handleResetPosition = async () => {
-    setContextMenuPos(null);
-    await resetWindowPosition();
-  };
-
-  const handleHidePet = async () => {
-    setContextMenuPos(null);
-    await hidePetWindow();
-  };
-
   if (initError) {
     return (
       <div className="app-container" style={{ padding: 12 }}>
-        <div className="about-modal-card" style={{ maxWidth: '100%' }}>
+        <div className="about-card" style={{ maxWidth: '100%' }}>
           <div className="about-title" style={{ color: '#ff7675' }}>
             Initialization Error
           </div>
@@ -173,31 +131,6 @@ export const App: React.FC = () => {
         onPointerUp={onPointerUp}
         onContextMenu={onContextMenu}
       />
-
-      {contextMenuPos && (
-        <CompanionMenu
-          position={contextMenuPos}
-          settings={settings}
-          onToggleAlwaysOnTop={handleToggleAlwaysOnTop}
-          onChangeSizePreset={handleChangeSizePreset}
-          onToggleAutostart={handleToggleAutostart}
-          onResetPosition={handleResetPosition}
-          onHidePet={handleHidePet}
-          onOpenAbout={() => {
-            setContextMenuPos(null);
-            setIsAboutOpen(true);
-          }}
-          onClose={() => setContextMenuPos(null)}
-        />
-      )}
-
-      {isAboutOpen && (
-        <AboutModal
-          species={species}
-          petProfile={petProfile}
-          onClose={() => setIsAboutOpen(false)}
-        />
-      )}
     </div>
   );
 };

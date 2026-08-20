@@ -1,8 +1,8 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Default capability for the main AI-Tamagotchi pet window",
-  "windows": ["main"],
+  "description": "Default capability for the AI-Tamagotchi windows",
+  "windows": ["main", "companion-menu"],
   "permissions": [
     "core:default",
     "core:window:allow-start-dragging",

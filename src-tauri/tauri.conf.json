@@ -29,6 +29,22 @@
         "maximized": false,
         "center": false,
         "visible": true
+      },
+      {
+        "title": "AI-Tamagotchi Companion Menu",
+        "label": "companion-menu",
+        "width": 200,
+        "height": 360,
+        "resizable": false,
+        "transparent": true,
+        "decorations": false,
+        "shadow": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "fullscreen": false,
+        "maximized": false,
+        "center": false,
+        "visible": false
       }
     ],
     "security": {
