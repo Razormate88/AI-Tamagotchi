@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0.0",
+  "speciesId": "gloop",
+  "canonicalName": "Gloop",
+  "description": "A curious, amorphous desktop companion with a joyful, bouncy temperament and an affinity for desktop wandering.",
+  "temperamentTags": [
+    "curious",
+    "bouncy",
+    "affectionate",
+    "spontaneous"
+  ],
+  "visualScaffolding": {
+    "shape": "blob",
+    "primaryColor": "#6C5CE7",
+    "secondaryColor": "#A29BFE",
+    "eyeColor": "#2D3436"
+  }
+}

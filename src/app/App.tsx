@@ -1,0 +1,196 @@
+import React, { useEffect, useState, useCallback } from 'react';
+import { CreatureRenderer } from '../creature/CreatureRenderer';
+import { CompanionMenu } from '../components/CompanionMenu';
+import { AboutModal } from '../components/AboutModal';
+import { ReactionBubble } from '../components/ReactionBubble';
+import { usePetInteraction } from '../desktop/usePetInteraction';
+import { initializeDatabase } from '../persistence/database';
+import { getOrCreatePrimaryPet, updatePetLastSeen } from '../persistence/petRepository';
+import { SettingsService } from '../settings/settingsService';
+import {
+  hidePetWindow,
+  resetWindowPosition,
+  subscribeToTrayEvents,
+  checkAutostartEnabled,
+  getWindowAlwaysOnTop,
+} from '../desktop/windowControl';
+import { PetProfile, SpeciesIdentity } from '../types/pet';
+import { AppSettings, DEFAULT_APP_SETTINGS, PetSizePreset } from '../types/settings';
+import { ContextMenuPosition } from '../types/desktop';
+import speciesBlueprint from '../../brain/species/identity.json';
+
+const species: SpeciesIdentity = speciesBlueprint as SpeciesIdentity;
+
+export const App: React.FC = () => {
+  const [petProfile, setPetProfile] = useState<PetProfile | null>(null);
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_APP_SETTINGS);
+  const [contextMenuPos, setContextMenuPos] = useState<ContextMenuPosition | null>(null);
+  const [isAboutOpen, setIsAboutOpen] = useState<boolean>(false);
+  const [squishTrigger, setSquishTrigger] = useState<number>(0);
+  const [isHovered, setIsHovered] = useState<boolean>(false);
+  const [initError, setInitError] = useState<string | null>(null);
+
+  // Initialize persistence, pet profile, and settings
+  useEffect(() => {
+    let mounted = true;
+
+    async function init() {
+      try {
+        await initializeDatabase();
+        const profile = await getOrCreatePrimaryPet(species);
+        const loadedSettings = await SettingsService.loadSettings();
+
+        // Check native autostart and always-on-top states
+        const autostart = await checkAutostartEnabled();
+        const alwaysOnTop = await getWindowAlwaysOnTop();
+
+        if (mounted) {
+          setPetProfile(profile);
+          setSettings({
+            ...loadedSettings,
+            autostart,
+            alwaysOnTop,
+          });
+        }
+      } catch (err) {
+        console.error('Fatal initialization error:', err);
+        if (mounted) {
+          setInitError(err instanceof Error ? err.message : String(err));
+        }
+      }
+    }
+
+    init();
+
+    // Listen to tray toggles
+    let unlistenTray: (() => void) | undefined;
+    subscribeToTrayEvents((alwaysOnTop) => {
+      if (mounted) {
+        setSettings((prev) => ({ ...prev, alwaysOnTop }));
+      }
+    }).then((unlisten) => {
+      unlistenTray = unlisten;
+    });
+
+    return () => {
+      mounted = false;
+      if (unlistenTray) {
+        unlistenTray();
+      }
+    };
+  }, []);
+
+  const handlePetClick = useCallback(() => {
+    setSquishTrigger((prev) => prev + 1);
+    if (petProfile) {
+      updatePetLastSeen(petProfile.id).catch((err) =>
+        console.error('Failed to update pet last seen:', err)
+      );
+    }
+  }, [petProfile]);
+
+  const handleOpenContextMenu = useCallback((pos: ContextMenuPosition) => {
+    setContextMenuPos(pos);
+  }, []);
+
+  const { onPointerDown, onPointerMove, onPointerUp, onContextMenu } = usePetInteraction({
+    onClickPet: handlePetClick,
+    onOpenContextMenu: handleOpenContextMenu,
+  });
+
+  const handleToggleAlwaysOnTop = async () => {
+    const nextVal = !settings.alwaysOnTop;
+    try {
+      await SettingsService.setAlwaysOnTop(nextVal);
+      setSettings((prev) => ({ ...prev, alwaysOnTop: nextVal }));
+    } catch (err) {
+      console.error('Failed to toggle always on top:', err);
+    }
+  };
+
+  const handleChangeSizePreset = async (preset: PetSizePreset) => {
+    try {
+      await SettingsService.setPetSizePreset(preset);
+      setSettings((prev) => ({ ...prev, petSizePreset: preset }));
+    } catch (err) {
+      console.error('Failed to change pet size preset:', err);
+    }
+  };
+
+  const handleToggleAutostart = async () => {
+    const nextVal = !settings.autostart;
+    try {
+      await SettingsService.setAutostart(nextVal);
+      setSettings((prev) => ({ ...prev, autostart: nextVal }));
+    } catch (err) {
+      console.error('Failed to toggle autostart:', err);
+    }
+  };
+
+  const handleResetPosition = async () => {
+    setContextMenuPos(null);
+    await resetWindowPosition();
+  };
+
+  const handleHidePet = async () => {
+    setContextMenuPos(null);
+    await hidePetWindow();
+  };
+
+  if (initError) {
+    return (
+      <div className="app-container" style={{ padding: 12 }}>
+        <div className="about-modal-card" style={{ maxWidth: '100%' }}>
+          <div className="about-title" style={{ color: '#ff7675' }}>
+            Initialization Error
+          </div>
+          <div className="about-value" style={{ fontSize: 11, marginTop: 4 }}>
+            {initError}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="app-container">
+      <ReactionBubble trigger={squishTrigger} />
+
+      <CreatureRenderer
+        species={species}
+        squishTrigger={squishTrigger}
+        isHovered={isHovered}
+        onHoverChange={setIsHovered}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onContextMenu={onContextMenu}
+      />
+
+      {contextMenuPos && (
+        <CompanionMenu
+          position={contextMenuPos}
+          settings={settings}
+          onToggleAlwaysOnTop={handleToggleAlwaysOnTop}
+          onChangeSizePreset={handleChangeSizePreset}
+          onToggleAutostart={handleToggleAutostart}
+          onResetPosition={handleResetPosition}
+          onHidePet={handleHidePet}
+          onOpenAbout={() => {
+            setContextMenuPos(null);
+            setIsAboutOpen(true);
+          }}
+          onClose={() => setContextMenuPos(null)}
+        />
+      )}
+
+      {isAboutOpen && (
+        <AboutModal
+          species={species}
+          petProfile={petProfile}
+          onClose={() => setIsAboutOpen(false)}
+        />
+      )}
+    </div>
+  );
+};

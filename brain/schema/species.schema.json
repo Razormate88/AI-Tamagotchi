@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Razormate88/AI-Tamagotchi/main/brain/schema/species.schema.json",
+  "title": "SpeciesIdentity",
+  "description": "Public, version-controlled definition of a Tamagotchi species identity and baseline characteristics.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "speciesId",
+    "canonicalName",
+    "description",
+    "temperamentTags",
+    "visualScaffolding"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Semantic version of this species schema definition."
+    },
+    "speciesId": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Unique immutable identifier for this species."
+    },
+    "canonicalName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Default canonical name for creatures of this species."
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of the species personality and lore baseline."
+    },
+    "temperamentTags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "description": "Baseline temperament and personality keywords."
+    },
+    "visualScaffolding": {
+      "type": "object",
+      "required": ["shape", "primaryColor", "secondaryColor"],
+      "properties": {
+        "shape": {
+          "type": "string",
+          "enum": ["blob", "amorphous", "sprite"]
+        },
+        "primaryColor": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "secondaryColor": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "eyeColor": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

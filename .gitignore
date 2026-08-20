@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production / Frontend Build
+dist/
+dist-ssr/
+build/
+*.local
+
+# Tauri / Rust Build Artifacts
+src-tauri/target/
+src-tauri/gen/
+**/*.rs.bk
+
+# Private Runtime State / Databases (SQLite)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.sqlite-shm
+*.sqlite-wal
+data/
+storage/
+local_data/
+
+# Private Memory / Episodic Logs / Sensitive Runtime Artifacts
+*.log
+logs/
+*.memory
+*.dump
+private_memory/
+recordings/
+screenshots/
+*.env
+*.env.local
+*.env.development.local
+*.env.test.local
+*.env.production.local
+
+# Editor / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Antigravity / CLI temporary artifacts
+.antigravity/

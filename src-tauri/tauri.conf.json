@@ -1,0 +1,56 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "AI-Tamagotchi",
+  "version": "0.1.0",
+  "identifier": "com.razormate.aitamagotchi",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "title": "AI-Tamagotchi",
+        "label": "main",
+        "width": 220,
+        "height": 220,
+        "minWidth": 140,
+        "minHeight": 140,
+        "resizable": true,
+        "transparent": true,
+        "decorations": false,
+        "shadow": false,
+        "alwaysOnTop": false,
+        "skipTaskbar": true,
+        "fullscreen": false,
+        "maximized": false,
+        "center": false,
+        "visible": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico",
+      "icons/icon.png"
+    ]
+  },
+  "plugins": {
+    "autostart": {},
+    "sql": {
+      "preload": ["sqlite:tamagotchi.db"]
+    },
+    "window-state": {}
+  }
+}
