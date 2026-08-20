@@ -34,7 +34,6 @@ export const CreatureRenderer: React.FC<CreatureRendererProps> = ({
   onContextMenu,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const appRef = useRef<Application | null>(null);
   const animStateRef = useRef<CreatureAnimationState>({
     time: 0,
@@ -63,7 +62,7 @@ export const CreatureRenderer: React.FC<CreatureRendererProps> = ({
   useEffect(() => {
     reportStage('creature_renderer_mounted');
     let isMounted = true;
-    let app: Application | null = null;
+    let localApp: Application | null = null;
 
     const colors: CreatureColors = {
       primary: parseHex(species.visualScaffolding.primaryColor, 0x6c5ce7),
@@ -74,15 +73,17 @@ export const CreatureRenderer: React.FC<CreatureRendererProps> = ({
     };
 
     async function initPixi() {
-      if (!canvasRef.current || !containerRef.current) {
-        reportError('pixi_init_skipped', 'canvasRef or containerRef is null');
+      const container = containerRef.current;
+      if (!container) {
+        reportError('pixi_init_skipped', 'containerRef is null');
         return;
       }
 
       try {
         const newApp = new Application();
         await newApp.init({
-          canvas: canvasRef.current,
+          width: container.clientWidth || 220,
+          height: container.clientHeight || 220,
           resizeTo: window,
           backgroundAlpha: 0,
           antialias: true,
@@ -91,12 +92,35 @@ export const CreatureRenderer: React.FC<CreatureRendererProps> = ({
         });
 
         if (!isMounted) {
-          newApp.destroy(true);
+          try {
+            if (newApp.canvas && newApp.canvas.parentNode) {
+              newApp.canvas.parentNode.removeChild(newApp.canvas);
+            }
+            newApp.destroy(true);
+          } catch {
+            // ignore cleanup error during unmount race
+          }
           return;
         }
 
-        app = newApp;
+        localApp = newApp;
         appRef.current = newApp;
+
+        // Ensure canvas styles match full container
+        const canvas = newApp.canvas;
+        canvas.style.position = 'absolute';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.display = 'block';
+        canvas.style.pointerEvents = 'none';
+
+        // Clear previous canvas children if any
+        while (container.firstChild) {
+          container.removeChild(container.firstChild);
+        }
+        container.appendChild(canvas);
 
         const creatureContainer = new Container();
         const graphics = new Graphics();
@@ -109,77 +133,134 @@ export const CreatureRenderer: React.FC<CreatureRendererProps> = ({
           `renderer: ${rendererType}, screen: ${newApp.screen.width}x${newApp.screen.height}, dpr: ${window.devicePixelRatio}`
         );
 
+        let probeLogged = false;
+
         newApp.ticker.add((ticker) => {
-        const deltaSeconds = Math.min(ticker.deltaMS / 1000, 0.1);
-        const anim = animStateRef.current;
-        anim.time += deltaSeconds;
+          const deltaSeconds = Math.min(ticker.deltaMS / 1000, 0.1);
+          const anim = animStateRef.current;
+          anim.time += deltaSeconds;
 
-        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        // Idle breathing & gentle vertical bob
-        const bobbing = prefersReducedMotion ? 0 : Math.sin(anim.time * 2.4) * 3.5;
-        const breathX = prefersReducedMotion ? 1 : 1 + Math.sin(anim.time * 2.4) * 0.025;
-        const breathY = prefersReducedMotion ? 1 : 1 - Math.sin(anim.time * 2.4) * 0.025;
+          // Idle breathing & gentle vertical bob
+          const bobbing = prefersReducedMotion ? 0 : Math.sin(anim.time * 2.4) * 3.5;
+          const breathX = prefersReducedMotion ? 1 : 1 + Math.sin(anim.time * 2.4) * 0.025;
+          const breathY = prefersReducedMotion ? 1 : 1 - Math.sin(anim.time * 2.4) * 0.025;
 
-        // Spring physics for click / hover reaction
-        const springK = 140;
-        const damping = 0.84;
-        const force = -anim.squishOffset * springK;
-        anim.squishVelocity = (anim.squishVelocity + force * deltaSeconds) * damping;
-        anim.squishOffset += anim.squishVelocity * deltaSeconds;
+          // Spring physics for click / hover reaction
+          const springK = 140;
+          const damping = 0.84;
+          const force = -anim.squishOffset * springK;
+          anim.squishVelocity = (anim.squishVelocity + force * deltaSeconds) * damping;
+          anim.squishOffset += anim.squishVelocity * deltaSeconds;
 
-        // Blink countdown timer
-        anim.blinkTimer -= deltaSeconds;
-        if (anim.blinkTimer <= 0) {
-          if (!anim.isBlinking) {
-            anim.isBlinking = true;
-          }
-          const blinkProgress = Math.abs(anim.blinkTimer);
-          const blinkDuration = 0.14; // 140ms
-          if (blinkProgress >= blinkDuration) {
-            anim.isBlinking = false;
-            anim.eyeScaleY = 1;
-            anim.blinkTimer = 2.5 + Math.random() * 4.0;
+          // Blink countdown timer
+          anim.blinkTimer -= deltaSeconds;
+          if (anim.blinkTimer <= 0) {
+            if (!anim.isBlinking) {
+              anim.isBlinking = true;
+            }
+            const blinkProgress = Math.abs(anim.blinkTimer);
+            const blinkDuration = 0.14; // 140ms
+            if (blinkProgress >= blinkDuration) {
+              anim.isBlinking = false;
+              anim.eyeScaleY = 1;
+              anim.blinkTimer = 2.5 + Math.random() * 4.0;
+            } else {
+              const t = blinkProgress / blinkDuration;
+              anim.eyeScaleY = Math.abs(Math.sin(t * Math.PI - Math.PI / 2));
+            }
           } else {
-            const t = blinkProgress / blinkDuration;
-            anim.eyeScaleY = Math.abs(Math.sin(t * Math.PI - Math.PI / 2));
+            anim.eyeScaleY = 1;
           }
-        } else {
-          anim.eyeScaleY = 1;
-        }
 
-        // Hover scale boost
-        const hoverScale = anim.isHovered && !prefersReducedMotion ? 1.05 : 1.0;
-        const scaleX = (breathX + anim.squishOffset) * hoverScale;
-        const scaleY = (breathY - anim.squishOffset) * hoverScale;
+          // Hover scale boost
+          const hoverScale = anim.isHovered && !prefersReducedMotion ? 1.05 : 1.0;
+          const scaleX = (breathX + anim.squishOffset) * hoverScale;
+          const scaleY = (breathY - anim.squishOffset) * hoverScale;
 
-        // Responsive position and scaling based on window size
-        const screenW = newApp.screen.width;
-        const screenH = newApp.screen.height;
-        const baseDimension = 220;
-        const responsiveFactor = Math.max(0.6, Math.min(screenW, screenH) / baseDimension);
+          // Responsive position and scaling based on window size
+          const screenW = newApp.screen.width;
+          const screenH = newApp.screen.height;
+          const baseDimension = 220;
+          const responsiveFactor = Math.max(0.6, Math.min(screenW, screenH) / baseDimension);
 
-        creatureContainer.position.set(screenW / 2, screenH / 2 + bobbing);
-        creatureContainer.scale.set(
-          responsiveFactor * scaleX,
-          responsiveFactor * scaleY
-        );
+          creatureContainer.position.set(screenW / 2, screenH / 2 + bobbing);
+          creatureContainer.scale.set(
+            responsiveFactor * scaleX,
+            responsiveFactor * scaleY
+          );
 
-        // Draw procedural Gloop
-        drawGloop(graphics, colors, anim);
-      });
-    } catch (err) {
-      console.error('Pixi initialization failed:', err);
-      reportError('pixi_init_failed', err);
+          // Draw procedural Gloop
+          drawGloop(graphics, colors, anim);
+
+          // Objective render probes and pixel proof
+          if (!probeLogged) {
+            probeLogged = true;
+            try {
+              const bounds = graphics.getBounds();
+              const localBounds = graphics.bounds;
+              const canvasInfo = `w=${canvas.width}, h=${canvas.height}, cssW=${canvas.clientWidth}, cssH=${canvas.clientHeight}, opacity=${canvas.style.opacity || 1}, display=${canvas.style.display}`;
+
+              const probeReport = [
+                `[PIXI] renderer: ${rendererType}`,
+                `[PIXI] stage children: ${newApp.stage.children.length}`,
+                `[PIXI] gloop attached: ${graphics.parent === creatureContainer && creatureContainer.parent === newApp.stage}`,
+                `[PIXI] gloop visible: ${graphics.visible}`,
+                `[PIXI] gloop renderable: ${graphics.renderable}`,
+                `[PIXI] gloop alpha: ${graphics.alpha}`,
+                `[PIXI] gloop position: (${creatureContainer.position.x.toFixed(1)}, ${creatureContainer.position.y.toFixed(1)})`,
+                `[PIXI] gloop scale: (${creatureContainer.scale.x.toFixed(3)}, ${creatureContainer.scale.y.toFixed(3)})`,
+                `[PIXI] gloop local bounds: (${localBounds.minX.toFixed(1)}, ${localBounds.minY.toFixed(1)}, ${localBounds.maxX.toFixed(1)}, ${localBounds.maxY.toFixed(1)})`,
+                `[PIXI] gloop world bounds: (${bounds.minX.toFixed(1)}, ${bounds.minY.toFixed(1)}, ${bounds.maxX.toFixed(1)}, ${bounds.maxY.toFixed(1)})`,
+                `[PIXI] canvas: ${canvasInfo}`,
+              ].join(' | ');
+
+              reportStage('pixi_render_probe', probeReport);
+
+              // Pixel proof: sample canvas directly or through extract
+              setTimeout(async () => {
+                try {
+                  const pixelData = newApp.renderer.extract.pixels(creatureContainer);
+                  let opaqueCount = 0;
+                  const pixels = pixelData.pixels;
+                  for (let i = 3; i < pixels.length; i += 4) {
+                    if (pixels[i] > 10) {
+                      opaqueCount++;
+                    }
+                  }
+                  reportStage(
+                    'pixi_pixel_proof',
+                    `non_transparent_pixels=${opaqueCount}/${pixels.length / 4} (sample alpha > 10)`
+                  );
+                } catch (e) {
+                  reportError('pixel_proof_failed', e);
+                }
+              }, 150);
+            } catch (err) {
+              reportError('probe_failed', err);
+            }
+          }
+        });
+      } catch (err) {
+        console.error('Pixi initialization failed:', err);
+        reportError('pixi_init_failed', err);
+      }
     }
-  }
 
-  initPixi();
+    initPixi();
 
     return () => {
       isMounted = false;
-      if (app) {
-        app.destroy(true);
+      if (localApp) {
+        try {
+          if (localApp.canvas && localApp.canvas.parentNode) {
+            localApp.canvas.parentNode.removeChild(localApp.canvas);
+          }
+          localApp.destroy(true);
+        } catch {
+          // ignore
+        }
         appRef.current = null;
       }
     };
@@ -201,14 +282,15 @@ export const CreatureRenderer: React.FC<CreatureRendererProps> = ({
       style={{
         width: '100%',
         height: '100%',
-        position: 'relative',
+        position: 'absolute',
+        top: 0,
+        left: 0,
         cursor: 'grab',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        outline: 'none',
       }}
-    >
-      <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
-    </div>
+    />
   );
 };
