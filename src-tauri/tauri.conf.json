@@ -49,7 +49,6 @@
   "plugins": {
     "sql": {
       "preload": ["sqlite:tamagotchi.db"]
-    },
-    "window-state": {}
+    }
   }
 }
