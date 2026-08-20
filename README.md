@@ -1,79 +1,123 @@
-# AI-Tamagotchi
+# AI-Tamagotchi // CHAOS EDITION
 
-A shared digital creature built by two friends learning code, GitHub, and AI-assisted development.
+Gloop started as a tiny shared browser pet.
 
-## Creature v0
+That situation has deteriorated.
 
-The first version is intentionally simple: plain HTML, CSS, and JavaScript.
+## What is in this build
 
-Gloop currently has:
+This is still intentionally **plain HTML, CSS, and JavaScript**. No framework and no build step.
 
-- Hunger
-- Happiness
-- Energy
-- Mood-based faces
-- Random dialogue
-- Feed, Pet, Poke, Scream, and Sleep actions
+But Gloop now has:
+
+- Cinematic fake BIOS boot sequence
+- Hunger, happiness, energy, chaos, XP, and levels
+- Multiple evolution forms
 - Browser persistence with `localStorage`
-- Slowly changing stats while the page is open
-
-No framework. No database. No AI API yet.
-
-That is intentional. The goal is to make the basic game understandable enough that either person can open a file, change something, refresh the browser, and immediately see what happened.
+- Session counter
+- Mood-based faces
+- Random contextual dialogue
+- Hats
+- Mutations
+- Unauthorized clones
+- A summonable void
+- Reality breaches
+- Quantum snacks with randomized outcomes
+- Ascension mode
+- Web Audio sound effects
+- Optional browser text-to-speech voice
+- Random world events
+- Achievement system
+- Event log
+- Background particles
+- Screen shake / burst effects
+- A forbidden terminal
+- Secret keyboard behavior
+- Basic mobile responsiveness
+- `prefers-reduced-motion` support
 
 ## Run it
 
-You can simply open `index.html` in a browser.
-
-For a nicer local development setup, use a tiny local server such as VS Code Live Server or:
+Open `index.html` directly, or use a local server:
 
 ```bash
 python -m http.server 8000
 ```
 
-Then visit `http://localhost:8000`.
+Then open:
 
-## Suggested Git workflow
+```text
+http://localhost:8000
+```
 
-Do not both edit `main` directly.
+## Things to try immediately
 
-Instead:
+1. Click **MUTATE** several times.
+2. Click **CLONE** repeatedly.
+3. Click **SUMMON VOID**.
+4. Click **REALITY BREACH**.
+5. Turn **VOICE** on and press **SCREAM**.
+6. Open the **FORBIDDEN TERMINAL**.
+7. In the terminal, type:
+
+```text
+help
+```
+
+8. Outside the terminal, simply type:
+
+```text
+gloop
+```
+
+No text box required.
+
+## Project rule
+
+Do not ask:
+
+> "Do we know how to build this?"
+
+Ask:
+
+> "What is the smallest version of this stupid idea that would actually work?"
+
+Then build that.
+
+## Next cursed feature branches
+
+- `feature/gloop-remembers-your-name`
+- `feature/weather-affects-gloop`
+- `feature/github-commit-reactions`
+- `feature/fake-stock-market`
+- `feature/gloop-cult`
+- `feature/creature-dna`
+- `feature/minigames`
+- `feature/boss-fight`
+- `feature/shared-online-state`
+- `feature/real-ai-dialogue`
+- `feature/gloop-dreams`
+- `feature/desktop-notifications`
+- `feature/gloop-website-takeover`
+
+## Recommended Git workflow
 
 ```bash
 git checkout main
 git pull
-git checkout -b feature/my-ridiculous-idea
+git checkout -b feature/my-terrible-idea
 ```
 
-Make your change, then:
+Make the ridiculous thing work, then:
 
 ```bash
-git add <the-files-you-changed>
-git commit -m "feat: describe the ridiculous thing"
-git push -u origin feature/my-ridiculous-idea
+git add <files-you-changed>
+git commit -m "feat: add terrible idea"
+git push -u origin feature/my-terrible-idea
 ```
 
 Open a pull request and make the other person review it.
 
-## Excellent next features
+The goal is not clean perfection.
 
-Pick one feature per branch:
-
-- `feature/tiny-hats`
-- `feature/creature-farts`
-- `feature/name-your-creature`
-- `feature/achievements`
-- `feature/mood-system`
-- `feature/secret-buttons`
-- `feature/weather`
-- `feature/creature-memory`
-- `feature/sound-effects`
-- `feature/nightmare-mode`
-- `feature/github-commit-reactions`
-- `feature/ai-dialogue`
-
-## Rule of the project
-
-If an idea sounds funny but you do not know how to build it, that means it is probably a good feature.
-
-Figure out the smallest working version, ask AI for help, make it work, then make it ridiculous.
+The goal is to keep making Gloop more alarming while learning how the code works.

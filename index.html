@@ -3,56 +3,160 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Tamagotchi</title>
+  <meta name="theme-color" content="#090911" />
+  <title>GLOOP // CHAOS EDITION</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="game-shell">
-    <section class="pet-card" aria-labelledby="pet-name">
-      <p class="eyebrow">SHARED CREATURE // V0</p>
-      <h1 id="pet-name">GLOOP</h1>
+  <div id="boot-screen" class="boot-screen" aria-live="polite">
+    <div class="boot-terminal">
+      <div class="boot-title">GLOOP BIOS v6.66</div>
+      <pre id="boot-log"></pre>
+      <button id="skip-boot" class="boot-skip">SKIP BOOT</button>
+    </div>
+  </div>
 
-      <div id="creature" class="creature" aria-live="polite">
-        <div id="face" class="face">(•ᴗ•)</div>
+  <div id="particles" class="particles" aria-hidden="true"></div>
+  <div id="flash" class="flash" aria-hidden="true"></div>
+
+  <main class="game-shell">
+    <header class="topbar">
+      <div>
+        <span class="status-dot"></span>
+        <strong>GLOOP ONLINE</strong>
+      </div>
+      <div class="topbar-right">
+        <span id="session-count">SESSION 1</span>
+        <span id="level-label">LVL 1</span>
+        <button id="voice-toggle" class="mini-button" type="button">VOICE: OFF</button>
+      </div>
+    </header>
+
+    <section class="pet-card">
+      <div class="title-row">
+        <div>
+          <p class="eyebrow">SHARED CREATURE // CHAOS BUILD</p>
+          <h1>GLOOP</h1>
+        </div>
+        <div id="evolution-badge" class="evolution-badge">FORM: LARVAL MENACE</div>
       </div>
 
-      <p id="mood" class="mood">Mood: suspiciously content</p>
-      <blockquote id="dialogue" class="dialogue">
-        I have existed for seven seconds and already have demands.
-      </blockquote>
+      <section id="creature-stage" class="creature-stage" aria-label="Gloop">
+        <div id="aura" class="aura"></div>
+        <div id="clone-layer" class="clone-layer" aria-hidden="true"></div>
+        <div id="hat" class="hat" aria-hidden="true"></div>
 
-      <div class="stats" aria-label="Creature stats">
-        <div class="stat-row">
-          <div class="stat-label"><span>Hunger</span><strong id="hunger-value">35</strong></div>
+        <div id="creature" class="creature">
+          <div id="face" class="face">(•ᴗ•)</div>
+          <div id="body-mark" class="body-mark">◉</div>
+        </div>
+
+        <div id="speech" class="speech-bubble">
+          I have booted with several unauthorized opinions.
+        </div>
+
+        <div id="stage-warning" class="stage-warning hidden">
+          REALITY INTEGRITY COMPROMISED
+        </div>
+      </section>
+
+      <section class="stats-grid" aria-label="Creature stats">
+        <div class="stat">
+          <div class="stat-head"><span>HUNGER</span><strong id="hunger-value">35</strong></div>
           <div class="meter"><div id="hunger-bar" class="meter-fill"></div></div>
         </div>
-
-        <div class="stat-row">
-          <div class="stat-label"><span>Happiness</span><strong id="happiness-value">70</strong></div>
+        <div class="stat">
+          <div class="stat-head"><span>HAPPINESS</span><strong id="happiness-value">70</strong></div>
           <div class="meter"><div id="happiness-bar" class="meter-fill"></div></div>
         </div>
-
-        <div class="stat-row">
-          <div class="stat-label"><span>Energy</span><strong id="energy-value">80</strong></div>
+        <div class="stat">
+          <div class="stat-head"><span>ENERGY</span><strong id="energy-value">80</strong></div>
           <div class="meter"><div id="energy-bar" class="meter-fill"></div></div>
         </div>
-      </div>
+        <div class="stat chaos-stat">
+          <div class="stat-head"><span>CHAOS</span><strong id="chaos-value">10</strong></div>
+          <div class="meter"><div id="chaos-bar" class="meter-fill chaos-fill"></div></div>
+        </div>
+      </section>
 
-      <div class="actions" aria-label="Creature actions">
-        <button data-action="feed">🍕 Feed</button>
-        <button data-action="pet">❤️ Pet</button>
-        <button data-action="poke">👉 Poke</button>
-        <button data-action="scream">📢 Scream</button>
-        <button data-action="sleep">💤 Sleep</button>
-      </div>
+      <section class="xp-row">
+        <span>XP</span>
+        <div class="meter xp-meter"><div id="xp-bar" class="meter-fill xp-fill"></div></div>
+        <strong id="xp-value">0 / 100</strong>
+      </section>
 
-      <button id="reset" class="reset-button">Reset creature</button>
+      <section class="button-zone">
+        <div class="button-group">
+          <p class="group-title">NORMAL HUMAN INTERACTIONS</p>
+          <div class="actions">
+            <button data-action="feed">🍕 FEED</button>
+            <button data-action="pet">❤️ PET</button>
+            <button data-action="poke">👉 POKE</button>
+            <button data-action="scream">📢 SCREAM</button>
+            <button data-action="sleep">💤 SLEEP</button>
+            <button data-action="hat">🎩 HAT</button>
+          </div>
+        </div>
+
+        <div class="button-group forbidden-group">
+          <p class="group-title danger-title">BUTTONS LEGALLY CLASSIFIED AS A BAD IDEA</p>
+          <div class="actions forbidden-actions">
+            <button data-action="mutate">🧬 MUTATE</button>
+            <button data-action="clone">👥 CLONE</button>
+            <button data-action="void">🕳️ SUMMON VOID</button>
+            <button data-action="breach">⚠️ REALITY BREACH</button>
+            <button data-action="quantum">🎲 QUANTUM SNACK</button>
+            <button data-action="ascend">👁️ ASCEND</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="dashboard-grid">
+        <div class="panel">
+          <div class="panel-title">
+            <span>EVENT LOG</span>
+            <button id="clear-log" class="mini-button" type="button">CLEAR</button>
+          </div>
+          <div id="event-log" class="event-log"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <span>ACHIEVEMENTS</span>
+            <span id="achievement-count">0</span>
+          </div>
+          <div id="achievement-list" class="achievement-list">
+            <p class="muted">Nothing yet. Disappointing.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer-controls">
+        <button id="terminal-toggle" class="secondary-button" type="button">⌨ OPEN FORBIDDEN TERMINAL</button>
+        <button id="reset" class="secondary-button danger-outline" type="button">☠ WIPE GLOOP'S MEMORY</button>
+      </div>
     </section>
 
     <aside class="dev-note">
-      <strong>DEV MODE:</strong> Every button is just JavaScript. Break it. Change it. Make Gloop worse.
+      <strong>TIP:</strong> Try typing <code>gloop</code> on your keyboard. Also, the forbidden terminal has opinions.
     </aside>
   </main>
+
+  <div id="terminal" class="terminal hidden" role="dialog" aria-modal="true" aria-label="Forbidden terminal">
+    <div class="terminal-window">
+      <div class="terminal-header">
+        <span>GLOOP://ROOT/forbidden_console</span>
+        <button id="terminal-close" type="button">×</button>
+      </div>
+      <div id="terminal-output" class="terminal-output"></div>
+      <form id="terminal-form" class="terminal-form">
+        <span>&gt;</span>
+        <input id="terminal-input" autocomplete="off" spellcheck="false" aria-label="Terminal command" />
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-layer" class="toast-layer" aria-live="polite"></div>
 
   <script src="creature.js"></script>
 </body>
