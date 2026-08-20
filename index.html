@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Tamagotchi</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="game-shell">
+    <section class="pet-card" aria-labelledby="pet-name">
+      <p class="eyebrow">SHARED CREATURE // V0</p>
+      <h1 id="pet-name">GLOOP</h1>
+
+      <div id="creature" class="creature" aria-live="polite">
+        <div id="face" class="face">(•ᴗ•)</div>
+      </div>
+
+      <p id="mood" class="mood">Mood: suspiciously content</p>
+      <blockquote id="dialogue" class="dialogue">
+        I have existed for seven seconds and already have demands.
+      </blockquote>
+
+      <div class="stats" aria-label="Creature stats">
+        <div class="stat-row">
+          <div class="stat-label"><span>Hunger</span><strong id="hunger-value">35</strong></div>
+          <div class="meter"><div id="hunger-bar" class="meter-fill"></div></div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-label"><span>Happiness</span><strong id="happiness-value">70</strong></div>
+          <div class="meter"><div id="happiness-bar" class="meter-fill"></div></div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-label"><span>Energy</span><strong id="energy-value">80</strong></div>
+          <div class="meter"><div id="energy-bar" class="meter-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="actions" aria-label="Creature actions">
+        <button data-action="feed">🍕 Feed</button>
+        <button data-action="pet">❤️ Pet</button>
+        <button data-action="poke">👉 Poke</button>
+        <button data-action="scream">📢 Scream</button>
+        <button data-action="sleep">💤 Sleep</button>
+      </div>
+
+      <button id="reset" class="reset-button">Reset creature</button>
+    </section>
+
+    <aside class="dev-note">
+      <strong>DEV MODE:</strong> Every button is just JavaScript. Break it. Change it. Make Gloop worse.
+    </aside>
+  </main>
+
+  <script src="creature.js"></script>
+</body>
+</html>
