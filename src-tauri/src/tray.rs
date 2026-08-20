@@ -38,9 +38,7 @@ pub fn setup_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
             if let Some(window) = app.get_webview_window("main") {
                 match id {
                     "show_pet" => {
-                        let _ = window.unminimize();
-                        let _ = window.show();
-                        let _ = window.set_focus();
+                        let _ = crate::commands::show_pet_authoritative(&window);
                     }
                     "hide_pet" => {
                         let _ = window.hide();
@@ -53,7 +51,7 @@ pub fn setup_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
                         }
                     }
                     "reset_position" => {
-                        let _ = crate::commands::reset_window_position(window);
+                        let _ = crate::commands::reset_window_position_authoritative(&window);
                     }
                     "quit" => {
                         app.exit(0);
@@ -77,9 +75,7 @@ pub fn setup_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
                         if is_visible {
                             let _ = window.hide();
                         } else {
-                            let _ = window.unminimize();
-                            let _ = window.show();
-                            let _ = window.set_focus();
+                            let _ = crate::commands::show_pet_authoritative(&window);
                         }
                     }
                 }

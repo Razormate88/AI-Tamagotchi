@@ -14,6 +14,7 @@ import {
   checkAutostartEnabled,
   getWindowAlwaysOnTop,
 } from '../desktop/windowControl';
+import { reportStage, reportError } from '../desktop/diagnostics';
 import { PetProfile, SpeciesIdentity } from '../types/pet';
 import { AppSettings, DEFAULT_APP_SETTINGS, PetSizePreset } from '../types/settings';
 import { ContextMenuPosition } from '../types/desktop';
@@ -33,6 +34,7 @@ export const App: React.FC = () => {
   // Initialize persistence, pet profile, and settings
   useEffect(() => {
     let mounted = true;
+    reportStage('app_mounted');
 
     async function init() {
       try {
@@ -51,9 +53,14 @@ export const App: React.FC = () => {
             autostart,
             alwaysOnTop,
           });
+          reportStage(
+            'persistence_init_success',
+            `pet: ${profile.name} (${profile.speciesId}), autostart: ${autostart}, alwaysOnTop: ${alwaysOnTop}`
+          );
         }
       } catch (err) {
         console.error('Fatal initialization error:', err);
+        reportError('persistence_init_failed', err);
         if (mounted) {
           setInitError(err instanceof Error ? err.message : String(err));
         }

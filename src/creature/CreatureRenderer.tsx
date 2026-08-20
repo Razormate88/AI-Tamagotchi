@@ -3,6 +3,7 @@ import { Application, Graphics, Container } from 'pixi.js';
 import { SpeciesIdentity } from '../types/pet';
 import { CreatureAnimationState, CreatureColors } from './creatureTypes';
 import { drawGloop } from './GloopGraphics';
+import { reportStage, reportError } from '../desktop/diagnostics';
 
 interface CreatureRendererProps {
   species: SpeciesIdentity;
@@ -60,6 +61,7 @@ export const CreatureRenderer: React.FC<CreatureRendererProps> = ({
   }, [squishTrigger]);
 
   useEffect(() => {
+    reportStage('creature_renderer_mounted');
     let isMounted = true;
     let app: Application | null = null;
 
@@ -72,32 +74,42 @@ export const CreatureRenderer: React.FC<CreatureRendererProps> = ({
     };
 
     async function initPixi() {
-      if (!canvasRef.current || !containerRef.current) return;
-
-      const newApp = new Application();
-      await newApp.init({
-        canvas: canvasRef.current,
-        resizeTo: containerRef.current,
-        backgroundAlpha: 0,
-        antialias: true,
-        resolution: window.devicePixelRatio || 1,
-        autoDensity: true,
-      });
-
-      if (!isMounted) {
-        newApp.destroy(true);
+      if (!canvasRef.current || !containerRef.current) {
+        reportError('pixi_init_skipped', 'canvasRef or containerRef is null');
         return;
       }
 
-      app = newApp;
-      appRef.current = newApp;
+      try {
+        const newApp = new Application();
+        await newApp.init({
+          canvas: canvasRef.current,
+          resizeTo: window,
+          backgroundAlpha: 0,
+          antialias: true,
+          resolution: window.devicePixelRatio || 1,
+          autoDensity: true,
+        });
 
-      const creatureContainer = new Container();
-      const graphics = new Graphics();
-      creatureContainer.addChild(graphics);
-      newApp.stage.addChild(creatureContainer);
+        if (!isMounted) {
+          newApp.destroy(true);
+          return;
+        }
 
-      newApp.ticker.add((ticker) => {
+        app = newApp;
+        appRef.current = newApp;
+
+        const creatureContainer = new Container();
+        const graphics = new Graphics();
+        creatureContainer.addChild(graphics);
+        newApp.stage.addChild(creatureContainer);
+
+        const rendererType = (newApp.renderer as unknown as { name?: string })?.name || 'unknown';
+        reportStage(
+          'pixi_initialized',
+          `renderer: ${rendererType}, screen: ${newApp.screen.width}x${newApp.screen.height}, dpr: ${window.devicePixelRatio}`
+        );
+
+        newApp.ticker.add((ticker) => {
         const deltaSeconds = Math.min(ticker.deltaMS / 1000, 0.1);
         const anim = animStateRef.current;
         anim.time += deltaSeconds;
@@ -156,9 +168,13 @@ export const CreatureRenderer: React.FC<CreatureRendererProps> = ({
         // Draw procedural Gloop
         drawGloop(graphics, colors, anim);
       });
+    } catch (err) {
+      console.error('Pixi initialization failed:', err);
+      reportError('pixi_init_failed', err);
     }
+  }
 
-    initPixi();
+  initPixi();
 
     return () => {
       isMounted = false;

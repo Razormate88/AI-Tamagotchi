@@ -1,7 +1,11 @@
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, UnlistenFn } from '@tauri-apps/api/event';
-import { enable as enableAutostart, disable as disableAutostart, isEnabled as isAutostartEnabledPlugin } from '@tauri-apps/plugin-autostart';
+import {
+  enable as enableAutostart,
+  disable as disableAutostart,
+  isEnabled as isAutostartEnabledPlugin,
+} from '@tauri-apps/plugin-autostart';
 
 /**
  * Checks whether the current pet window is always on top.
@@ -42,16 +46,21 @@ export async function hidePetWindow(): Promise<void> {
 }
 
 /**
- * Shows and focuses the companion pet window.
+ * Authoritatively shows, unminimizes, verifies geometry, and focuses the companion pet window.
  */
 export async function showPetWindow(): Promise<void> {
   try {
-    const appWindow = getCurrentWindow();
-    await appWindow.unminimize();
-    await appWindow.show();
-    await appWindow.setFocus();
+    await invoke('show_pet');
   } catch (error) {
-    console.error('Failed to show window:', error);
+    console.error('Failed to invoke show_pet command:', error);
+    try {
+      const appWindow = getCurrentWindow();
+      await appWindow.unminimize();
+      await appWindow.show();
+      await appWindow.setFocus();
+    } catch (fallbackError) {
+      console.error('Fallback show window failed:', fallbackError);
+    }
   }
 }
 
@@ -63,10 +72,14 @@ export async function resetWindowPosition(): Promise<void> {
     await invoke('reset_window_position');
   } catch (error) {
     console.error('Failed to invoke reset_window_position command:', error);
-    // Fallback: manually resize to standard preset
-    const appWindow = getCurrentWindow();
-    await appWindow.show();
-    await appWindow.setFocus();
+    try {
+      const appWindow = getCurrentWindow();
+      await appWindow.unminimize();
+      await appWindow.show();
+      await appWindow.setFocus();
+    } catch (fallbackError) {
+      console.error('Fallback reset window failed:', fallbackError);
+    }
   }
 }
 
