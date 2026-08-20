@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Razormate88/AI-Tamagotchi/main/brain/schema/dreams.schema.json",
+  "title": "SpeciesDreamsBlueprint",
+  "description": "Public templates and fragments for offline, deterministic sleep dream generation.",
+  "type": "object",
+  "required": ["schemaVersion", "speciesId", "themes", "wakeReactions"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "speciesId": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "themes": {
+      "type": "object",
+      "required": ["food", "play", "mischief", "absence", "affection", "lonely", "general"],
+      "properties": {
+        "food": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "play": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "mischief": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "absence": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "affection": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "lonely": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "general": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      },
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
+    "wakeReactions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false
+}

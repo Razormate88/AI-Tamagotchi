@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "1.0.0",
+  "speciesId": "gloop",
+  "relationshipBaselines": {
+    "affection": 50.0,
+    "trust": 50.0,
+    "familiarity": 0.0,
+    "annoyance": 0.0
+  },
+  "relationshipScaling": {
+    "feedHungryAffection": 3.5,
+    "feedFullAffection": -1.0,
+    "petAffection": 2.0,
+    "petLonelyBonus": 3.0,
+    "playAffection": 2.5,
+    "playTiredAffection": -1.5,
+    "pokeAnnoyance": 6.0,
+    "repeatedPokeAnnoyance": 16.0,
+    "wakeExhaustedAnnoyance": 12.0,
+    "wakeReluctantTrustPenalty": -2.0,
+    "returnFamiliarityGain": 4.0,
+    "interactionFamiliarityGain": 0.25,
+    "absenceTrustDecayPerDay": 0.5,
+    "annoyanceHalfLifeHours": 0.5
+  },
+  "personalityBaselines": {
+    "curiosity": 75.0,
+    "playfulness": 70.0,
+    "affectionateness": 65.0,
+    "mischief": 45.0,
+    "independence": 40.0,
+    "patience": 50.0
+  },
+  "personalityDriftRates": {
+    "maxDriftFromBaseline": 25.0,
+    "playImpactOnPlayfulness": 0.05,
+    "exploreImpactOnCuriosity": 0.03,
+    "petImpactOnAffectionateness": 0.04,
+    "pokeImpactOnMischief": 0.05,
+    "pokeImpactOnPatience": -0.04,
+    "comfortAloneImpactOnIndependence": 0.02
+  },
+  "memoryTuning": {
+    "decayHalfLifeDays": {
+      "mundane": 2.0,
+      "moderate": 14.0,
+      "major": 60.0
+    },
+    "pruneThresholdStrength": 0.08,
+    "maxDurableMemories": 300,
+    "maxDreams": 50,
+    "recallCooldownMs": 180000,
+    "salienceThresholds": {
+      "first": 0.85,
+      "majorAbsenceHours": 48.0,
+      "moderateAbsenceHours": 8.0
+    }
+  },
+  "preferenceTuning": {
+    "confidenceSamplesRequired": 5,
+    "learningRate": 18.0
+  },
+  "habitTuning": {
+    "minSamplesForConfidence": 4,
+    "acknowledgementCooldownMs": 3600000
+  },
+  "dreamTuning": {
+    "minSleepDurationMs": 120000,
+    "baseDreamChance": 0.5,
+    "dreamCooldownMs": 1800000
+  },
+  "bondStages": [
+    {
+      "id": "new_creature",
+      "name": "New Creature",
+      "description": "Just getting acquainted with the desktop and its owner.",
+      "minFamiliarity": 0,
+      "minAffection": 0,
+      "minTrust": 0
+    },
+    {
+      "id": "acquaintance",
+      "name": "Acquaintance",
+      "description": "Recognizes you and begins anticipating regular snacks and play.",
+      "minFamiliarity": 15,
+      "minAffection": 35,
+      "minTrust": 30
+    },
+    {
+      "id": "buddy",
+      "name": "Buddy",
+      "description": "Comfortable and cheerful. Enjoys spending desktop hours with you.",
+      "minFamiliarity": 35,
+      "minAffection": 52,
+      "minTrust": 48
+    },
+    {
+      "id": "close_friend",
+      "name": "Close Friend",
+      "description": "A close companion who cherishes gentle care and forgives mild mischief.",
+      "minFamiliarity": 60,
+      "minAffection": 70,
+      "minTrust": 68
+    },
+    {
+      "id": "best_friend",
+      "name": "Best Friend",
+      "description": "Deep trust and warmth. Gloop is happiest when you are nearby.",
+      "minFamiliarity": 80,
+      "minAffection": 84,
+      "minTrust": 82
+    },
+    {
+      "id": "bonded",
+      "name": "Bonded Soul",
+      "description": "An inseparable bond forged through enduring shared history.",
+      "minFamiliarity": 95,
+      "minAffection": 92,
+      "minTrust": 90
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "1.0.0",
+  "speciesId": "gloop",
+  "themes": {
+    "food": [
+      "I dreamed the snack cabinet declared independence and rained treats.",
+      "I dreamed about an infinite mountain of purple jelly snacks.",
+      "I dreamed I opened a five-star dessert cafe right on your taskbar.",
+      "I dreamed of floating through a warm syrup ocean with crispy cracker boats."
+    ],
+    "play": [
+      "I dreamed we were bouncing in zero gravity across the moon.",
+      "I dreamed I became a giant beach ball rolling joyfully across the desktop.",
+      "I dreamed of winning the Grand Desktop Bounce Championship with 10,000 points.",
+      "I dreamed every click of your mouse turned into a shower of rainbow confetti."
+    ],
+    "mischief": [
+      "I dreamed I rearranged all your desktop icons while you slept.",
+      "I dreamed I grew bouncy armor that deflected every single poke.",
+      "I dreamed I turned your mouse cursor into a bouncy rubber ball.",
+      "I dreamed I hid inside your recycle bin and made spooky jelly noises."
+    ],
+    "absence": [
+      "I dreamed the desktop stretched on into infinity while I waited for you.",
+      "I dreamed I went on a long expedition behind the screen wallpaper.",
+      "I dreamed the monitor turned off and the entire universe went quiet."
+    ],
+    "affection": [
+      "I dreamed of a warm, cozy cloud made of endless gentle head pats.",
+      "I dreamed we lived in a palace made of soft glowing lavender jelly.",
+      "I dreamed you gave me a tiny golden crown for being the best desktop buddy."
+    ],
+    "lonely": [
+      "I dreamed of calling out across an empty screen and hearing a gentle echo.",
+      "I dreamed I made friends with a pixel wandering alone in the void."
+    ],
+    "general": [
+      "I dreamed I could change colors whenever your music played.",
+      "I dreamed about floating peacefully through a sea of neon stars.",
+      "I dreamed the monitor was a secret window looking out into deep space.",
+      "I dreamed I discovered the secret forgotten kingdom of desktop blobs."
+    ]
+  },
+  "wakeReactions": [
+    "I had a weird dream...",
+    "I dreamed about food again.",
+    "Do not ask what happened in my dream.",
+    "My dream was wild!",
+    "Woke up from a strange dream...",
+    "That was an interesting dream."
+  ]
+}

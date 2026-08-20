@@ -18,12 +18,24 @@ import {
 } from '../../persistence/lifeEventRepository';
 import { InteractionType } from '../engine/interactionEngine';
 import { reportStage, reportError } from '../../desktop/diagnostics';
+import { MindCoordinator } from '../../mind/coordinator/mindCoordinator';
+import { SpeciesMindConfig } from '../../mind/model/mindConfig';
+import { SpeciesMemoriesConfig } from '../../mind/model/memoryTemplates';
+import { SpeciesDreamsConfig } from '../../mind/model/dreamTemplates';
+import { SpeciesSecretsConfig } from '../../mind/model/secretDefinitions';
+import { MindPresentationSnapshot } from '../../mind/model/mindState';
+import { getPersonalityActivityModifiers } from '../../mind/pure/personalityEngine';
 
 export interface SimulationCoordinatorOptions {
   species: SpeciesIdentity;
   lifeConfig: SpeciesLifeConfig;
   reactionPack: SpeciesReactionPack;
+  mindConfig?: SpeciesMindConfig;
+  memoriesConfig?: SpeciesMemoriesConfig;
+  dreamsConfig?: SpeciesDreamsConfig;
+  secretsConfig?: SpeciesSecretsConfig;
   onSnapshotChange: (snapshot: SimulationSnapshot) => void;
+  onMindSnapshotChange?: (snapshot: MindPresentationSnapshot) => void;
   onSquishImpulse?: (impulse: number) => void;
 }
 
@@ -39,7 +51,12 @@ export class SimulationCoordinator {
   private timerId: ReturnType<typeof setInterval> | null = null;
   private unlistenInteraction: UnlistenFn | null = null;
   private unlistenSnapshotReq: UnlistenFn | null = null;
+  private unlistenMindSnapshotReq: UnlistenFn | null = null;
+  private unlistenForgetMemory: UnlistenFn | null = null;
+  private unlistenResetMind: UnlistenFn | null = null;
 
+  private mindCoordinator: MindCoordinator | null = null;
+  private sleepStartedAt: number = 0;
   private lastPersistTime: number = 0;
   private lastPruneTime: number = 0;
   private recentPokeTimestamps: number[] = [];
@@ -98,9 +115,24 @@ export class SimulationCoordinator {
     this.state = currentState;
     this.mood = SimulationCore.getMood(this.state, now, this.options.lifeConfig);
     this.lastPersistTime = now;
+    if (this.state.sleepState === 'asleep') {
+      this.sleepStartedAt = now;
+    }
 
     // Prune life events periodically on startup
     await pruneLifeEvents(petId);
+
+    // Initialize MindCoordinator if mind configs are provided
+    if (this.options.mindConfig && this.options.memoriesConfig && this.options.dreamsConfig && this.options.secretsConfig) {
+      this.mindCoordinator = new MindCoordinator({
+        mindConfig: this.options.mindConfig,
+        memoriesConfig: this.options.memoriesConfig,
+        dreamsConfig: this.options.dreamsConfig,
+        secretsConfig: this.options.secretsConfig,
+        onSnapshotChange: this.options.onMindSnapshotChange,
+      });
+      await this.mindCoordinator.initialize(petId, this.state.rngState);
+    }
 
     // Setup Tauri event listeners for multi-window requests from companion-menu
     await this.setupIpcListeners();
@@ -134,6 +166,25 @@ export class SimulationCoordinator {
         const snapshot = this.getSnapshot();
         await this.broadcastSnapshot(snapshot);
       });
+
+      this.unlistenMindSnapshotReq = await listen('request-mind-snapshot', async () => {
+        if (this.mindCoordinator) {
+          const mindSnapshot = this.mindCoordinator.getPresentationSnapshot();
+          await emit('mind-state-updated', mindSnapshot);
+        }
+      });
+
+      this.unlistenForgetMemory = await listen<{ memoryId: number }>('forget-memory', async (event) => {
+        if (event.payload && event.payload.memoryId !== undefined && this.mindCoordinator) {
+          await this.mindCoordinator.forgetMemory(event.payload.memoryId);
+        }
+      });
+
+      this.unlistenResetMind = await listen('reset-learned-mind', async () => {
+        if (this.mindCoordinator) {
+          await this.mindCoordinator.resetLearnedMind();
+        }
+      });
     } catch (err) {
       reportError('ipc_listeners_setup_failed', err);
     }
@@ -155,7 +206,7 @@ export class SimulationCoordinator {
   /**
    * Heartbeat step: advances wall-clock simulation deterministically.
    */
-  private tick(): void {
+  private async tick(): Promise<void> {
     if (!this.state || this.isDestroyed) return;
 
     const now = Date.now();
@@ -168,12 +219,27 @@ export class SimulationCoordinator {
     const prevActivity = this.state.currentActivity;
     const prevSleepState = this.state.sleepState;
 
+    if (prevSleepState !== 'asleep' && this.state.sleepState === 'asleep') {
+      this.sleepStartedAt = now;
+    }
+
+    // Get personality modifiers if mindCoordinator is available
+    let personalityMods: any = undefined;
+    if (this.mindCoordinator && this.options.mindConfig) {
+      const mindState = this.mindCoordinator.getMindState();
+      personalityMods = getPersonalityActivityModifiers(
+        mindState,
+        this.options.mindConfig.personalityBaselines
+      );
+    }
+
     const result = SimulationCore.step(
       this.state,
       now,
       this.options.lifeConfig,
       this.options.reactionPack,
-      this.options.species.temperamentTags
+      this.options.species.temperamentTags,
+      personalityMods
     );
 
     this.state = result.nextState;
@@ -188,9 +254,32 @@ export class SimulationCoordinator {
 
     // Record any new life events
     if (result.lifeEvents.length > 0) {
-      recordLifeEvents(result.lifeEvents).catch((err) =>
+      await recordLifeEvents(result.lifeEvents).catch((err) =>
         reportError('record_events_failed', err)
       );
+      if (this.mindCoordinator) {
+        await this.mindCoordinator.processEvents(result.lifeEvents, now);
+      }
+    }
+
+    // Check if pet just woke up -> trigger dream check!
+    if (prevSleepState === 'asleep' && this.state.sleepState === 'awake') {
+      const sleepDuration = now - (this.sleepStartedAt || (now - 60000));
+      if (this.mindCoordinator) {
+        const dreamWakeBubble = await this.mindCoordinator.handleSleepWake(sleepDuration, now);
+        if (dreamWakeBubble && (!this.speech || this.speech.priority === 'low')) {
+          this.speech = {
+            text: dreamWakeBubble,
+            category: 'dream.wake',
+            priority: 'normal',
+            expiresAt: now + 4000,
+          };
+        }
+      }
+    }
+
+    if (this.mindCoordinator) {
+      await this.mindCoordinator.tick(now);
     }
 
     const snapshot = this.getSnapshot();
@@ -260,6 +349,26 @@ export class SimulationCoordinator {
 
     if (result.lifeEvents.length > 0) {
       await recordLifeEvents(result.lifeEvents);
+      if (this.mindCoordinator) {
+        await this.mindCoordinator.processEvents(result.lifeEvents, now);
+      }
+    }
+
+    // Check for occasional memory-based reaction callbacks
+    if (this.mindCoordinator && result.speechBubble?.category) {
+      const callbackSpeech = await this.mindCoordinator.getRecallSpeech(
+        result.speechBubble.category,
+        now
+      );
+      // Low chance to replace normal line with a memory callback when eligible
+      if (callbackSpeech && Math.random() < 0.35) {
+        this.speech = {
+          text: callbackSpeech,
+          category: 'memory.callback',
+          priority: 'normal',
+          expiresAt: now + 4000,
+        };
+      }
     }
 
     await savePetState(this.state);
@@ -295,6 +404,10 @@ export class SimulationCoordinator {
     };
   }
 
+  public getMindCoordinator(): MindCoordinator | null {
+    return this.mindCoordinator;
+  }
+
   /**
    * Diagnostic summary for dev debugging.
    */
@@ -320,6 +433,18 @@ export class SimulationCoordinator {
     if (this.unlistenSnapshotReq) {
       this.unlistenSnapshotReq();
       this.unlistenSnapshotReq = null;
+    }
+    if (this.unlistenMindSnapshotReq) {
+      this.unlistenMindSnapshotReq();
+      this.unlistenMindSnapshotReq = null;
+    }
+    if (this.unlistenForgetMemory) {
+      this.unlistenForgetMemory();
+      this.unlistenForgetMemory = null;
+    }
+    if (this.unlistenResetMind) {
+      this.unlistenResetMind();
+      this.unlistenResetMind = null;
     }
     if (this.state) {
       try {

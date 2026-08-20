@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Razormate88/AI-Tamagotchi/main/brain/schema/memories.schema.json",
+  "title": "SpeciesMemoriesBlueprint",
+  "description": "Public templates and definitions for memory interpretation and presentation formatting.",
+  "type": "object",
+  "required": ["schemaVersion", "speciesId", "templates"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "speciesId": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "templates": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

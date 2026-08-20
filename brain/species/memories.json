@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "speciesId": "gloop",
+  "templates": {
+    "first.feed": "You fed me for the very first time! Delicious jelly snack.",
+    "first.pet": "First time you gently pet my bouncy head.",
+    "first.play": "Our very first playtime together! Pure joy.",
+    "first.poke": "The moment you discovered you could squish and poke me.",
+    "first.sleep": "My very first nap in my new desktop home.",
+    "first.long_absence": "You were away for {hours} hours. I kept the taskbar warm.",
+    "first.very_long_return": "You returned after {days} days! I was starting to wonder.",
+    "first.grumpy": "The first time I got truly grumpy with you.",
+    "first.bond_stage_upgrade": "Our bond deepened: reached {stageName} status!",
+    "first.secret_discovery": "You discovered a secret: {secretName}!",
+    "care.feeding": "You've been keeping me well-fed ({count} snacks enjoyed).",
+    "care.comfort_lonely": "You comfort me when I get lonely ({count} times).",
+    "conflict.poking": "You poked me {count} times. I am keeping track.",
+    "conflict.waking": "You woke me up while I was exhausted ({count} times).",
+    "absence.long": "You disappeared for {hours} hours.",
+    "return.long": "You came back after {days} days away.",
+    "pattern.routine": "We usually hang out during the {timeBucket}.",
+    "affection.bonding": "Lots of gentle head pats and warm attention ({count} sessions).",
+    "dream.recollection": "I had a strange dream: \"{dreamSummary}\""
+  }
+}

@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Razormate88/AI-Tamagotchi/main/brain/schema/mind.schema.json",
+  "title": "SpeciesMindBlueprint",
+  "description": "Public, version-controlled definition of baseline species relationship, personality, memory decay, preferences, dreams, and bond progression.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "speciesId",
+    "relationshipBaselines",
+    "relationshipScaling",
+    "personalityBaselines",
+    "personalityDriftRates",
+    "memoryTuning",
+    "preferenceTuning",
+    "habitTuning",
+    "dreamTuning",
+    "bondStages"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "speciesId": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "relationshipBaselines": {
+      "type": "object",
+      "required": ["affection", "trust", "familiarity", "annoyance"],
+      "properties": {
+        "affection": { "type": "number", "minimum": 0, "maximum": 100 },
+        "trust": { "type": "number", "minimum": 0, "maximum": 100 },
+        "familiarity": { "type": "number", "minimum": 0, "maximum": 100 },
+        "annoyance": { "type": "number", "minimum": 0, "maximum": 100 }
+      },
+      "additionalProperties": false
+    },
+    "relationshipScaling": {
+      "type": "object",
+      "required": [
+        "feedHungryAffection",
+        "feedFullAffection",
+        "petAffection",
+        "petLonelyBonus",
+        "playAffection",
+        "playTiredAffection",
+        "pokeAnnoyance",
+        "repeatedPokeAnnoyance",
+        "wakeExhaustedAnnoyance",
+        "wakeReluctantTrustPenalty",
+        "returnFamiliarityGain",
+        "interactionFamiliarityGain",
+        "absenceTrustDecayPerDay",
+        "annoyanceHalfLifeHours"
+      ],
+      "properties": {
+        "feedHungryAffection": { "type": "number" },
+        "feedFullAffection": { "type": "number" },
+        "petAffection": { "type": "number" },
+        "petLonelyBonus": { "type": "number" },
+        "playAffection": { "type": "number" },
+        "playTiredAffection": { "type": "number" },
+        "pokeAnnoyance": { "type": "number" },
+        "repeatedPokeAnnoyance": { "type": "number" },
+        "wakeExhaustedAnnoyance": { "type": "number" },
+        "wakeReluctantTrustPenalty": { "type": "number" },
+        "returnFamiliarityGain": { "type": "number" },
+        "interactionFamiliarityGain": { "type": "number" },
+        "absenceTrustDecayPerDay": { "type": "number" },
+        "annoyanceHalfLifeHours": { "type": "number", "minimum": 0.01 }
+      },
+      "additionalProperties": false
+    },
+    "personalityBaselines": {
+      "type": "object",
+      "required": [
+        "curiosity",
+        "playfulness",
+        "affectionateness",
+        "mischief",
+        "independence",
+        "patience"
+      ],
+      "properties": {
+        "curiosity": { "type": "number", "minimum": 0, "maximum": 100 },
+        "playfulness": { "type": "number", "minimum": 0, "maximum": 100 },
+        "affectionateness": { "type": "number", "minimum": 0, "maximum": 100 },
+        "mischief": { "type": "number", "minimum": 0, "maximum": 100 },
+        "independence": { "type": "number", "minimum": 0, "maximum": 100 },
+        "patience": { "type": "number", "minimum": 0, "maximum": 100 }
+      },
+      "additionalProperties": false
+    },
+    "personalityDriftRates": {
+      "type": "object",
+      "required": [
+        "maxDriftFromBaseline",
+        "playImpactOnPlayfulness",
+        "exploreImpactOnCuriosity",
+        "petImpactOnAffectionateness",
+        "pokeImpactOnMischief",
+        "pokeImpactOnPatience",
+        "comfortAloneImpactOnIndependence"
+      ],
+      "properties": {
+        "maxDriftFromBaseline": { "type": "number", "minimum": 0, "maximum": 50 },
+        "playImpactOnPlayfulness": { "type": "number" },
+        "exploreImpactOnCuriosity": { "type": "number" },
+        "petImpactOnAffectionateness": { "type": "number" },
+        "pokeImpactOnMischief": { "type": "number" },
+        "pokeImpactOnPatience": { "type": "number" },
+        "comfortAloneImpactOnIndependence": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "memoryTuning": {
+      "type": "object",
+      "required": [
+        "decayHalfLifeDays",
+        "pruneThresholdStrength",
+        "maxDurableMemories",
+        "maxDreams",
+        "recallCooldownMs",
+        "salienceThresholds"
+      ],
+      "properties": {
+        "decayHalfLifeDays": {
+          "type": "object",
+          "required": ["mundane", "moderate", "major"],
+          "properties": {
+            "mundane": { "type": "number", "minimum": 0.1 },
+            "moderate": { "type": "number", "minimum": 0.1 },
+            "major": { "type": "number", "minimum": 0.1 }
+          },
+          "additionalProperties": false
+        },
+        "pruneThresholdStrength": { "type": "number", "minimum": 0, "maximum": 1 },
+        "maxDurableMemories": { "type": "integer", "minimum": 10 },
+        "maxDreams": { "type": "integer", "minimum": 5 },
+        "recallCooldownMs": { "type": "integer", "minimum": 1000 },
+        "salienceThresholds": {
+          "type": "object",
+          "required": ["first", "majorAbsenceHours", "moderateAbsenceHours"],
+          "properties": {
+            "first": { "type": "number", "minimum": 0, "maximum": 1 },
+            "majorAbsenceHours": { "type": "number", "minimum": 1 },
+            "moderateAbsenceHours": { "type": "number", "minimum": 1 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "preferenceTuning": {
+      "type": "object",
+      "required": ["confidenceSamplesRequired", "learningRate"],
+      "properties": {
+        "confidenceSamplesRequired": { "type": "integer", "minimum": 1 },
+        "learningRate": { "type": "number", "minimum": 1, "maximum": 100 }
+      },
+      "additionalProperties": false
+    },
+    "habitTuning": {
+      "type": "object",
+      "required": ["minSamplesForConfidence", "acknowledgementCooldownMs"],
+      "properties": {
+        "minSamplesForConfidence": { "type": "integer", "minimum": 1 },
+        "acknowledgementCooldownMs": { "type": "integer", "minimum": 1000 }
+      },
+      "additionalProperties": false
+    },
+    "dreamTuning": {
+      "type": "object",
+      "required": ["minSleepDurationMs", "baseDreamChance", "dreamCooldownMs"],
+      "properties": {
+        "minSleepDurationMs": { "type": "integer", "minimum": 1000 },
+        "baseDreamChance": { "type": "number", "minimum": 0, "maximum": 1 },
+        "dreamCooldownMs": { "type": "integer", "minimum": 1000 }
+      },
+      "additionalProperties": false
+    },
+    "bondStages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description", "minFamiliarity", "minAffection", "minTrust"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "minFamiliarity": { "type": "number", "minimum": 0, "maximum": 100 },
+          "minAffection": { "type": "number", "minimum": 0, "maximum": 100 },
+          "minTrust": { "type": "number", "minimum": 0, "maximum": 100 }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

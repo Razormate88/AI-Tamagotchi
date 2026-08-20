@@ -61,6 +61,75 @@ const MIGRATIONS = [
       CREATE INDEX IF NOT EXISTS idx_life_events_pet_time ON pet_life_events (pet_id, occurred_at);
     `,
   },
+  {
+    version: 3,
+    sql: `
+      CREATE TABLE IF NOT EXISTS pet_mind_state (
+        pet_id TEXT PRIMARY KEY,
+        affection REAL NOT NULL,
+        trust REAL NOT NULL,
+        familiarity REAL NOT NULL,
+        annoyance REAL NOT NULL,
+        curiosity REAL NOT NULL,
+        playfulness REAL NOT NULL,
+        affectionateness REAL NOT NULL,
+        mischief REAL NOT NULL,
+        independence REAL NOT NULL,
+        patience REAL NOT NULL,
+        processed_life_event_id INTEGER NOT NULL,
+        mind_updated_at INTEGER NOT NULL,
+        revision INTEGER NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS pet_memories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        pet_id TEXT NOT NULL,
+        memory_type TEXT NOT NULL,
+        subject_key TEXT NOT NULL,
+        formed_at INTEGER NOT NULL,
+        last_reinforced_at INTEGER NOT NULL,
+        last_recalled_at INTEGER,
+        salience REAL NOT NULL,
+        strength REAL NOT NULL,
+        valence REAL NOT NULL,
+        reinforcement_count INTEGER NOT NULL,
+        protected INTEGER NOT NULL DEFAULT 0,
+        payload_json TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_memories_pet_formed ON pet_memories (pet_id, formed_at);
+      CREATE INDEX IF NOT EXISTS idx_memories_pet_salience ON pet_memories (pet_id, salience);
+      CREATE INDEX IF NOT EXISTS idx_memories_pet_subject ON pet_memories (pet_id, subject_key);
+
+      CREATE TABLE IF NOT EXISTS pet_preferences (
+        pet_id TEXT NOT NULL,
+        preference_key TEXT NOT NULL,
+        affinity REAL NOT NULL,
+        confidence REAL NOT NULL,
+        sample_count INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        PRIMARY KEY (pet_id, preference_key)
+      );
+
+      CREATE TABLE IF NOT EXISTS pet_habits (
+        pet_id TEXT NOT NULL,
+        habit_key TEXT NOT NULL,
+        strength REAL NOT NULL,
+        sample_count INTEGER NOT NULL,
+        last_observed_at INTEGER NOT NULL,
+        payload_json TEXT NOT NULL,
+        PRIMARY KEY (pet_id, habit_key)
+      );
+
+      CREATE TABLE IF NOT EXISTS pet_unlocks (
+        pet_id TEXT NOT NULL,
+        unlock_key TEXT NOT NULL,
+        unlocked_at INTEGER NOT NULL,
+        payload_json TEXT NOT NULL,
+        PRIMARY KEY (pet_id, unlock_key)
+      );
+    `,
+  },
 ];
 
 /**

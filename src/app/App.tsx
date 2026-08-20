@@ -19,13 +19,25 @@ import { SimulationCoordinator } from '../simulation/runtime/simulationCoordinat
 import { SimulationSnapshot } from '../simulation/model/petState';
 import { SpeciesLifeConfig } from '../simulation/model/speciesLife';
 import { SpeciesReactionPack } from '../simulation/model/reactions';
+import { SpeciesMindConfig } from '../mind/model/mindConfig';
+import { SpeciesMemoriesConfig } from '../mind/model/memoryTemplates';
+import { SpeciesDreamsConfig } from '../mind/model/dreamTemplates';
+import { SpeciesSecretsConfig } from '../mind/model/secretDefinitions';
 import speciesBlueprint from '../../brain/species/identity.json';
 import lifeBlueprint from '../../brain/species/life.json';
 import reactionsBlueprint from '../../brain/species/reactions.json';
+import mindBlueprint from '../../brain/species/mind.json';
+import memoriesBlueprint from '../../brain/species/memories.json';
+import dreamsBlueprint from '../../brain/species/dreams.json';
+import secretsBlueprint from '../../brain/species/secrets.json';
 
 const species: SpeciesIdentity = speciesBlueprint as SpeciesIdentity;
 const lifeConfig: SpeciesLifeConfig = lifeBlueprint as SpeciesLifeConfig;
 const reactionPack: SpeciesReactionPack = reactionsBlueprint as SpeciesReactionPack;
+const mindConfig: SpeciesMindConfig = mindBlueprint as SpeciesMindConfig;
+const memoriesConfig: SpeciesMemoriesConfig = memoriesBlueprint as SpeciesMemoriesConfig;
+const dreamsConfig: SpeciesDreamsConfig = dreamsBlueprint as SpeciesDreamsConfig;
+const secretsConfig: SpeciesSecretsConfig = secretsBlueprint as SpeciesSecretsConfig;
 
 export const App: React.FC = () => {
   const [petProfile, setPetProfile] = useState<PetProfile | null>(null);
@@ -57,6 +69,10 @@ export const App: React.FC = () => {
           species,
           lifeConfig,
           reactionPack,
+          mindConfig,
+          memoriesConfig,
+          dreamsConfig,
+          secretsConfig,
           onSnapshotChange: (newSnapshot) => {
             if (mounted) {
               setSnapshot(newSnapshot);

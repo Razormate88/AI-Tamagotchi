@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { CompanionMenu } from './CompanionMenu';
 import { AboutCard } from './AboutModal';
 import { CareStatusView } from './CareStatusView';
+import { MindView } from './MindView';
 import { SettingsService } from '../settings/settingsService';
 import {
   hideCompanionMenu,
@@ -17,6 +18,7 @@ import { getOrCreatePrimaryPet } from '../persistence/petRepository';
 import { AppSettings, DEFAULT_APP_SETTINGS, PetSizePreset } from '../types/settings';
 import { PetProfile, SpeciesIdentity } from '../types/pet';
 import { PetMood, PetState, SimulationSnapshot } from '../simulation/model/petState';
+import { MindPresentationSnapshot } from '../mind/model/mindState';
 import { InteractionType } from '../simulation/engine/interactionEngine';
 import { emit, listen } from '@tauri-apps/api/event';
 import speciesBlueprint from '../../brain/species/identity.json';
@@ -27,9 +29,10 @@ export const CompanionMenuWindow: React.FC = () => {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_APP_SETTINGS);
   const [petProfile, setPetProfile] = useState<PetProfile | null>(null);
   const [petState, setPetState] = useState<PetState | null>(null);
+  const [mindSnapshot, setMindSnapshot] = useState<MindPresentationSnapshot | null>(null);
   const [mood, setMood] = useState<PetMood>('content');
-  const [view, setView] = useState<'menu' | 'care' | 'about'>('menu');
-  const viewRef = useRef<'menu' | 'care' | 'about'>('menu');
+  const [view, setView] = useState<'menu' | 'care' | 'mind' | 'about'>('menu');
+  const viewRef = useRef<'menu' | 'care' | 'mind' | 'about'>('menu');
   viewRef.current = view;
 
   const refreshState = useCallback(async () => {
@@ -48,8 +51,9 @@ export const CompanionMenuWindow: React.FC = () => {
       });
       setPetProfile(profile);
 
-      // Request fresh simulation snapshot from the authoritative main window
+      // Request fresh simulation and mind snapshots from the authoritative main window
       await emit('request-simulation-snapshot', {});
+      await emit('request-mind-snapshot', {});
     } catch (err) {
       console.error('Failed to load companion menu settings:', err);
     }
@@ -65,6 +69,7 @@ export const CompanionMenuWindow: React.FC = () => {
     let unlistenShown: (() => void) | undefined;
     let unlistenTray: (() => void) | undefined;
     let unlistenSnapshot: (() => void) | undefined;
+    let unlistenMindSnapshot: (() => void) | undefined;
 
     // Listen to simulation updates broadcasted by main window
     listen<SimulationSnapshot>('simulation-state-updated', (event) => {
@@ -74,6 +79,14 @@ export const CompanionMenuWindow: React.FC = () => {
       }
     }).then((unlisten) => {
       unlistenSnapshot = unlisten;
+    });
+
+    listen<MindPresentationSnapshot>('mind-state-updated', (event) => {
+      if (event.payload) {
+        setMindSnapshot(event.payload);
+      }
+    }).then((unlisten) => {
+      unlistenMindSnapshot = unlisten;
     });
 
     subscribeToCompanionMenuShown(() => {
@@ -91,7 +104,7 @@ export const CompanionMenuWindow: React.FC = () => {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (viewRef.current === 'about' || viewRef.current === 'care') {
+        if (viewRef.current === 'about' || viewRef.current === 'care' || viewRef.current === 'mind') {
           setView('menu');
         } else {
           hideCompanionMenu().catch(console.error);
@@ -110,6 +123,7 @@ export const CompanionMenuWindow: React.FC = () => {
       if (unlistenShown) unlistenShown();
       if (unlistenTray) unlistenTray();
       if (unlistenSnapshot) unlistenSnapshot();
+      if (unlistenMindSnapshot) unlistenMindSnapshot();
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('blur', handleBlur);
     };
@@ -162,8 +176,12 @@ export const CompanionMenuWindow: React.FC = () => {
 
   const handleOpenCare = () => {
     setView('care');
-    // Request fresh snapshot from main simulation authority
     emit('request-simulation-snapshot', {}).catch(console.error);
+  };
+
+  const handleOpenMind = () => {
+    setView('mind');
+    emit('request-mind-snapshot', {}).catch(console.error);
   };
 
   const handleOpenAbout = () => {
@@ -187,12 +205,29 @@ export const CompanionMenuWindow: React.FC = () => {
     }
   };
 
+  const handleForgetMemory = async (memoryId: number) => {
+    try {
+      await emit('forget-memory', { memoryId });
+    } catch (err) {
+      console.error('Failed to emit forget memory:', err);
+    }
+  };
+
+  const handleResetLearnedMind = async () => {
+    try {
+      await emit('reset-learned-mind', {});
+    } catch (err) {
+      console.error('Failed to emit reset learned mind:', err);
+    }
+  };
+
   return (
     <div className="companion-popup-surface">
       {view === 'menu' && (
         <CompanionMenu
           settings={settings}
           onOpenCare={handleOpenCare}
+          onOpenMind={handleOpenMind}
           onToggleAlwaysOnTop={handleToggleAlwaysOnTop}
           onChangeSizePreset={handleChangeSizePreset}
           onToggleAutostart={handleToggleAutostart}
@@ -209,6 +244,16 @@ export const CompanionMenuWindow: React.FC = () => {
           mood={mood}
           onBack={handleBackToMenu}
           onInteract={handleInteract}
+        />
+      )}
+
+      {view === 'mind' && (
+        <MindView
+          species={species}
+          mindSnapshot={mindSnapshot}
+          onBack={handleBackToMenu}
+          onForgetMemory={handleForgetMemory}
+          onResetLearnedMind={handleResetLearnedMind}
         />
       )}
 

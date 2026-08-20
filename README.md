@@ -4,18 +4,19 @@ AI-Tamagotchi is a persistent, intelligent desktop companion application. Rather
 
 ---
 
-## Current Milestone: M002 (Autonomous Life Simulation)
+## Current Milestone: M003 (Adaptive Mind, Relationship, Memories & Dreams)
 
-M002 establishes that Gloop is an autonomous living desktop companion. Time passes continuously, needs decay and recover based on wall-clock progression, autonomous decisions and moods emerge deterministically, and offline life is accurately simulated without requiring external AI APIs or cloud connections.
+M003 establishes that Gloop has a personal history and adaptive mind. Memories form from real life events, relationships evolve dynamically through bond stages (Affection, Trust, Familiarity, Annoyance), personality drifts slowly with experience, preferences and habits develop from interaction patterns, sleep dreams form offline from recent themes, and secret history discoveries unlock—all operating completely offline and deterministically without external AI APIs or cloud services.
 
 ### Architectural Summary
 - **Desktop Framework:** [Tauri 2](https://v2.tauri.app/) (Rust native backend)
 - **Frontend Stack:** React 19, TypeScript, Vite
-- **Renderer:** [PixiJS 8](https://pixijs.com/) (Procedural vector rendering reacting to moods and states)
-- **Pure Simulation Engine:** Deterministic, testable simulation core (`src/simulation/`) with wall-clock authority, 32-bit seeded PRNG, utility-based autonomous decision making, and analytical $O(1)$ offline catch-up
-- **Local Persistence:** SQLite via `@tauri-apps/plugin-sql` storing pet profiles, durable simulation state (`pet_state`), settings, and private life event timeline (`pet_life_events`)
-- **Care & Status View:** Dedicated interactive view inside companion popup for monitoring needs (Satiety, Energy, Fun, Social) and triggering manual care actions (Feed, Pet, Play, Poke, Sleep/Wake)
-- **Public Species Brain:** Version-controlled identity (`brain/species/identity.json`), life blueprint (`brain/species/life.json`), and reaction packs (`brain/species/reactions.json`)
+- **Renderer:** [PixiJS 8](https://pixijs.com/) (Procedural vector rendering reacting to moods, states, and squish physics)
+- **Pure Simulation Engine:** Deterministic simulation core (`src/simulation/`) with wall-clock authority, 32-bit seeded PRNG, utility-based autonomous decision making, and analytical $O(1)$ offline catch-up
+- **Adaptive Mind Engine:** Deterministic interpreted mind (`src/mind/`) managing memory formation, analytical decay, recall ranking, relationship dynamics, personality evolution, preference learning, habit recognition, offline dream generation, and secret unlock evaluation
+- **Local Persistence:** SQLite via `@tauri-apps/plugin-sql` storing pet profiles, durable simulation state (`pet_state`), life events (`pet_life_events`), mind state (`pet_mind_state`), memories (`pet_memories`), preferences (`pet_preferences`), habits (`pet_habits`), and unlocks (`pet_unlocks`)
+- **Gloop's Mind View:** Dedicated interactive view inside companion popup for exploring Bond stages, Personality traits, Discovered Preferences, Memories, Dreams, and Secret Unlocks, with memory Forget agency and safe Reset Learned Mind controls
+- **Public Species Brain:** Version-controlled identity (`brain/species/identity.json`), life blueprint (`brain/species/life.json`), reactions (`brain/species/reactions.json`), mind tuning (`brain/species/mind.json`), memory templates (`brain/species/memories.json`), dreams blueprint (`brain/species/dreams.json`), and secrets definitions (`brain/species/secrets.json`)
 
 ---
 

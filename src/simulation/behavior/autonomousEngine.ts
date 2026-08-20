@@ -22,7 +22,8 @@ export function evaluateAutonomousDecision(
   now: number,
   config: SpeciesLifeConfig,
   reactions: SpeciesReactionPack,
-  temperamentTags: readonly string[] = []
+  temperamentTags: readonly string[] = [],
+  personalityModifiers?: Partial<Record<PetActivityType, number>>
 ): AutonomousDecisionResult {
   let rng = state.rngState;
   const lifeEvents: PetLifeEvent[] = [];
@@ -109,6 +110,11 @@ export function evaluateAutonomousDecision(
       if (tagMods && tagMods[act] !== undefined) {
         weight *= tagMods[act]!;
       }
+    }
+
+    // Apply personality modifiers if present
+    if (personalityModifiers && personalityModifiers[act] !== undefined) {
+      weight *= personalityModifiers[act]!;
     }
 
     // State & need utility modulations

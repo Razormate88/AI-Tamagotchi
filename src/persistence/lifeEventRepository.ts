@@ -89,3 +89,38 @@ export async function pruneLifeEvents(
     [petId, maxLowPriorityEvents]
   );
 }
+
+/**
+ * Retrieves life events occurring after a given event ID for incremental mind processing.
+ */
+export async function getLifeEventsAfter(
+  petId: string,
+  afterId: number,
+  limit: number = 100
+): Promise<PetLifeEvent[]> {
+  const db = getDatabase();
+  const rows = await db.select<LifeEventRow[]>(
+    `SELECT id, pet_id, event_type, occurred_at, importance, payload_json
+     FROM pet_life_events
+     WHERE pet_id = $1 AND id > $2
+     ORDER BY id ASC
+     LIMIT $3`,
+    [petId, afterId, limit]
+  );
+  return rows.map(mapRowToEvent);
+}
+
+/**
+ * Gets the maximum life event ID currently persisted for a pet.
+ */
+export async function getMaxLifeEventId(petId: string): Promise<number> {
+  const db = getDatabase();
+  const rows = await db.select<{ max_id: number | null }[]>(
+    `SELECT MAX(id) as max_id FROM pet_life_events WHERE pet_id = $1`,
+    [petId]
+  );
+  if (!rows || rows.length === 0 || rows[0].max_id === null) {
+    return 0;
+  }
+  return rows[0].max_id;
+}

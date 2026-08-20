@@ -1,4 +1,10 @@
-import { PetLifeEvent, PetMood, PetState, SpeechBubbleState } from '../model/petState';
+import {
+  PetActivityType,
+  PetLifeEvent,
+  PetMood,
+  PetState,
+  SpeechBubbleState,
+} from '../model/petState';
 import { SpeciesLifeConfig } from '../model/speciesLife';
 import { SpeciesReactionPack } from '../model/reactions';
 import { computeAsleepNeeds, computeAwakeNeeds } from '../time/timeUtils';
@@ -28,7 +34,8 @@ export class SimulationCore {
     now: number,
     config: SpeciesLifeConfig,
     reactions: SpeciesReactionPack,
-    temperament: readonly string[] = []
+    temperament: readonly string[] = [],
+    personalityModifiers?: Partial<Record<PetActivityType, number>>
   ): SimulationStepResult {
     const elapsedMs = Math.max(0, now - state.simulationUpdatedAt);
     const lifeEvents: PetLifeEvent[] = [];
@@ -67,7 +74,8 @@ export class SimulationCore {
         now,
         config,
         reactions,
-        temperament
+        temperament,
+        personalityModifiers
       );
       workingState = decision.nextState;
       lifeEvents.push(...decision.lifeEvents);
