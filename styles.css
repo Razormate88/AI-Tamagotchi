@@ -304,9 +304,17 @@ h1 {
 }
 
 .face {
-  font-family: "Courier New", monospace;
-  font-size: clamp(2.4rem, 7vw, 4.4rem);
+  position: relative;
+  z-index: 2;
+  max-width: 88%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+  font-family: "Courier New", ui-monospace, monospace;
+  font-size: clamp(2rem, 5.5vw, 3.4rem);
+  line-height: 1;
   font-weight: 700;
+  letter-spacing: -0.08em;
   text-shadow: 0 4px 18px rgba(0,0,0,0.34);
   user-select: none;
 }

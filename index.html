@@ -16,6 +16,43 @@
     </div>
   </div>
 
+
+  <script>
+    // Emergency diagnostics: runs independently of creature.js so the boot
+    // screen can tell us exactly why the main app did not start.
+    window.GLOOP_DIAGNOSTICS = true;
+
+    function gloopDiag(message) {
+      const write = () => {
+        const log = document.getElementById("boot-log");
+        if (log) log.textContent += `${message}\n`;
+      };
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", write, { once: true });
+      } else {
+        write();
+      }
+    }
+
+    window.addEventListener("error", (event) => {
+      gloopDiag(
+        `[FATAL JS] ${event.message || "Unknown error"}`
+        + (event.filename ? `\n  ${event.filename}:${event.lineno}:${event.colno}` : "")
+      );
+    });
+
+    window.addEventListener("unhandledrejection", (event) => {
+      const reason = event.reason?.stack || event.reason?.message || String(event.reason);
+      gloopDiag(`[UNHANDLED PROMISE]\n${reason}`);
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      gloopDiag("[DIAG] index.html JavaScript is alive.");
+      gloopDiag("[DIAG] waiting for creature.js...");
+    });
+  </script>
+
   <div id="particles" class="particles" aria-hidden="true"></div>
   <div id="flash" class="flash" aria-hidden="true"></div>
 
@@ -158,6 +195,10 @@
 
   <div id="toast-layer" class="toast-layer" aria-live="polite"></div>
 
-  <script src="creature.js"></script>
+  <script
+    src="./creature.js?v=chaos-debug-3"
+    onload="gloopDiag('[DIAG] creature.js downloaded and executed.')"
+    onerror="gloopDiag('[FATAL] Browser could not load creature.js. Check file name/path/server.')"
+  ></script>
 </body>
 </html>
