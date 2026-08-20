@@ -273,9 +273,36 @@ const randomEvents = [
   }
 ];
 
+function storageGet(key) {
+  try {
+    return window.localStorage.getItem(key);
+  } catch (error) {
+    console.warn("Gloop storage read unavailable; using session-only memory.", error);
+    return null;
+  }
+}
+
+function storageSet(key, value) {
+  try {
+    window.localStorage.setItem(key, value);
+    return true;
+  } catch (error) {
+    console.warn("Gloop storage write unavailable; continuing without persistence.", error);
+    return false;
+  }
+}
+
+function storageRemove(key) {
+  try {
+    window.localStorage.removeItem(key);
+  } catch (error) {
+    console.warn("Gloop storage reset unavailable.", error);
+  }
+}
+
 function loadState() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  const old = localStorage.getItem("ai-tamagotchi-gloop-v0");
+  const saved = storageGet(STORAGE_KEY);
+  const old = storageGet("ai-tamagotchi-gloop-v0");
 
   try {
     if (saved) return { ...defaultState, ...JSON.parse(saved) };
@@ -298,7 +325,7 @@ function loadState() {
 
 function saveState() {
   state.lastUpdated = Date.now();
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  storageSet(STORAGE_KEY, JSON.stringify(state));
 }
 
 function clamp(value) {
@@ -1008,7 +1035,7 @@ function resetState() {
     return;
   }
 
-  localStorage.removeItem(STORAGE_KEY);
+  storageRemove(STORAGE_KEY);
   state = { ...defaultState, sessionCount: 1, firstBoot: false };
   saveState();
   elements.eventLog.innerHTML = "";
