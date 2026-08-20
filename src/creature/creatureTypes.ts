@@ -1,3 +1,5 @@
+import { PetMood } from '../simulation/model/petState';
+
 export interface CreatureColors {
   primary: number;
   secondary: number;
@@ -16,4 +18,5 @@ export interface CreatureAnimationState {
   squishVelocity: number;
   pupilOffsetX: number;
   pupilOffsetY: number;
+  mood: PetMood;
 }

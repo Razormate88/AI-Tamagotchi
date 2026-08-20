@@ -4,9 +4,11 @@ import { SpeciesIdentity } from '../types/pet';
 import { CreatureAnimationState, CreatureColors } from './creatureTypes';
 import { drawGloop } from './GloopGraphics';
 import { reportStage, reportError } from '../desktop/diagnostics';
+import { PetMood } from '../simulation/model/petState';
 
 interface CreatureRendererProps {
   species: SpeciesIdentity;
+  mood?: PetMood;
   squishTrigger: number;
   isHovered: boolean;
   onHoverChange: (hovered: boolean) => void;
@@ -25,6 +27,7 @@ function parseHex(hex: string | undefined, fallback: number): number {
 
 export const CreatureRenderer: React.FC<CreatureRendererProps> = ({
   species,
+  mood = 'content',
   squishTrigger,
   isHovered,
   onHoverChange,
@@ -45,12 +48,17 @@ export const CreatureRenderer: React.FC<CreatureRendererProps> = ({
     squishVelocity: 0,
     pupilOffsetX: 0,
     pupilOffsetY: 0,
+    mood: mood,
   });
 
-  // Sync hover state to ref for animation loop
+  // Sync hover & mood states to ref for animation loop
   useEffect(() => {
     animStateRef.current.isHovered = isHovered;
   }, [isHovered]);
+
+  useEffect(() => {
+    animStateRef.current.mood = mood;
+  }, [mood]);
 
   // Trigger squish bounce on click reaction
   useEffect(() => {
@@ -142,10 +150,29 @@ export const CreatureRenderer: React.FC<CreatureRendererProps> = ({
 
           const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-          // Idle breathing & gentle vertical bob
-          const bobbing = prefersReducedMotion ? 0 : Math.sin(anim.time * 2.4) * 3.5;
-          const breathX = prefersReducedMotion ? 1 : 1 + Math.sin(anim.time * 2.4) * 0.025;
-          const breathY = prefersReducedMotion ? 1 : 1 - Math.sin(anim.time * 2.4) * 0.025;
+          // Breathing rate responds to mood
+          const currentMood = anim.mood;
+          let breathSpeed = 2.4;
+          let bobAmplitude = 3.5;
+
+          if (currentMood === 'asleep') {
+            breathSpeed = 1.2;
+            bobAmplitude = 1.5;
+          } else if (currentMood === 'tired') {
+            breathSpeed = 1.6;
+            bobAmplitude = 2.0;
+          } else if (currentMood === 'excited') {
+            breathSpeed = 3.6;
+            bobAmplitude = 5.0;
+          } else if (currentMood === 'happy') {
+            breathSpeed = 2.8;
+            bobAmplitude = 4.0;
+          }
+
+          // Idle breathing & vertical bob
+          const bobbing = prefersReducedMotion ? 0 : Math.sin(anim.time * breathSpeed) * bobAmplitude;
+          const breathX = prefersReducedMotion ? 1 : 1 + Math.sin(anim.time * breathSpeed) * 0.025;
+          const breathY = prefersReducedMotion ? 1 : 1 - Math.sin(anim.time * breathSpeed) * 0.025;
 
           // Spring physics for click / hover reaction
           const springK = 140;
@@ -154,24 +181,28 @@ export const CreatureRenderer: React.FC<CreatureRendererProps> = ({
           anim.squishVelocity = (anim.squishVelocity + force * deltaSeconds) * damping;
           anim.squishOffset += anim.squishVelocity * deltaSeconds;
 
-          // Blink countdown timer
-          anim.blinkTimer -= deltaSeconds;
-          if (anim.blinkTimer <= 0) {
-            if (!anim.isBlinking) {
-              anim.isBlinking = true;
-            }
-            const blinkProgress = Math.abs(anim.blinkTimer);
-            const blinkDuration = 0.14; // 140ms
-            if (blinkProgress >= blinkDuration) {
-              anim.isBlinking = false;
-              anim.eyeScaleY = 1;
-              anim.blinkTimer = 2.5 + Math.random() * 4.0;
+          // Blink timer (only when awake)
+          if (currentMood !== 'asleep') {
+            anim.blinkTimer -= deltaSeconds;
+            if (anim.blinkTimer <= 0) {
+              if (!anim.isBlinking) {
+                anim.isBlinking = true;
+              }
+              const blinkProgress = Math.abs(anim.blinkTimer);
+              const blinkDuration = 0.14; // 140ms
+              if (blinkProgress >= blinkDuration) {
+                anim.isBlinking = false;
+                anim.eyeScaleY = 1;
+                anim.blinkTimer = 2.5 + Math.random() * 4.0;
+              } else {
+                const t = blinkProgress / blinkDuration;
+                anim.eyeScaleY = Math.abs(Math.sin(t * Math.PI - Math.PI / 2));
+              }
             } else {
-              const t = blinkProgress / blinkDuration;
-              anim.eyeScaleY = Math.abs(Math.sin(t * Math.PI - Math.PI / 2));
+              anim.eyeScaleY = 1;
             }
           } else {
-            anim.eyeScaleY = 1;
+            anim.eyeScaleY = 0.05;
           }
 
           // Hover scale boost
@@ -194,49 +225,13 @@ export const CreatureRenderer: React.FC<CreatureRendererProps> = ({
           // Draw procedural Gloop
           drawGloop(graphics, colors, anim);
 
-          // Objective render probes and pixel proof
+          // Objective render probes
           if (!probeLogged) {
             probeLogged = true;
             try {
               const bounds = graphics.getBounds();
-              const localBounds = graphics.bounds;
-              const canvasInfo = `w=${canvas.width}, h=${canvas.height}, cssW=${canvas.clientWidth}, cssH=${canvas.clientHeight}, opacity=${canvas.style.opacity || 1}, display=${canvas.style.display}`;
-
-              const probeReport = [
-                `[PIXI] renderer: ${rendererType}`,
-                `[PIXI] stage children: ${newApp.stage.children.length}`,
-                `[PIXI] gloop attached: ${graphics.parent === creatureContainer && creatureContainer.parent === newApp.stage}`,
-                `[PIXI] gloop visible: ${graphics.visible}`,
-                `[PIXI] gloop renderable: ${graphics.renderable}`,
-                `[PIXI] gloop alpha: ${graphics.alpha}`,
-                `[PIXI] gloop position: (${creatureContainer.position.x.toFixed(1)}, ${creatureContainer.position.y.toFixed(1)})`,
-                `[PIXI] gloop scale: (${creatureContainer.scale.x.toFixed(3)}, ${creatureContainer.scale.y.toFixed(3)})`,
-                `[PIXI] gloop local bounds: (${localBounds.minX.toFixed(1)}, ${localBounds.minY.toFixed(1)}, ${localBounds.maxX.toFixed(1)}, ${localBounds.maxY.toFixed(1)})`,
-                `[PIXI] gloop world bounds: (${bounds.minX.toFixed(1)}, ${bounds.minY.toFixed(1)}, ${bounds.maxX.toFixed(1)}, ${bounds.maxY.toFixed(1)})`,
-                `[PIXI] canvas: ${canvasInfo}`,
-              ].join(' | ');
-
-              reportStage('pixi_render_probe', probeReport);
-
-              // Pixel proof: sample canvas directly or through extract
-              setTimeout(async () => {
-                try {
-                  const pixelData = newApp.renderer.extract.pixels(creatureContainer);
-                  let opaqueCount = 0;
-                  const pixels = pixelData.pixels;
-                  for (let i = 3; i < pixels.length; i += 4) {
-                    if (pixels[i] > 10) {
-                      opaqueCount++;
-                    }
-                  }
-                  reportStage(
-                    'pixi_pixel_proof',
-                    `non_transparent_pixels=${opaqueCount}/${pixels.length / 4} (sample alpha > 10)`
-                  );
-                } catch (e) {
-                  reportError('pixel_proof_failed', e);
-                }
-              }, 150);
+              const canvasInfo = `w=${canvas.width}, h=${canvas.height}, cssW=${canvas.clientWidth}, cssH=${canvas.clientHeight}`;
+              reportStage('pixi_render_probe', `renderer=${rendererType} | bounds=(${bounds.width}x${bounds.height}) | canvas=${canvasInfo}`);
             } catch (err) {
               reportError('probe_failed', err);
             }
@@ -277,7 +272,7 @@ export const CreatureRenderer: React.FC<CreatureRendererProps> = ({
       onMouseEnter={() => onHoverChange(true)}
       onMouseLeave={() => onHoverChange(false)}
       role="img"
-      aria-label={`${species.canonicalName}, your desktop companion`}
+      aria-label={`${species.canonicalName}, your desktop companion (${mood})`}
       tabIndex={0}
       style={{
         width: '100%',

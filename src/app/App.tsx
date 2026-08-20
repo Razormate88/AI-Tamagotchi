@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { CreatureRenderer } from '../creature/CreatureRenderer';
 import { ReactionBubble } from '../components/ReactionBubble';
 import { usePetInteraction } from '../desktop/usePetInteraction';
@@ -15,18 +15,29 @@ import { reportStage, reportError } from '../desktop/diagnostics';
 import { PetProfile, SpeciesIdentity } from '../types/pet';
 import { AppSettings, DEFAULT_APP_SETTINGS } from '../types/settings';
 import { ContextMenuPosition } from '../types/desktop';
+import { SimulationCoordinator } from '../simulation/runtime/simulationCoordinator';
+import { SimulationSnapshot } from '../simulation/model/petState';
+import { SpeciesLifeConfig } from '../simulation/model/speciesLife';
+import { SpeciesReactionPack } from '../simulation/model/reactions';
 import speciesBlueprint from '../../brain/species/identity.json';
+import lifeBlueprint from '../../brain/species/life.json';
+import reactionsBlueprint from '../../brain/species/reactions.json';
 
 const species: SpeciesIdentity = speciesBlueprint as SpeciesIdentity;
+const lifeConfig: SpeciesLifeConfig = lifeBlueprint as SpeciesLifeConfig;
+const reactionPack: SpeciesReactionPack = reactionsBlueprint as SpeciesReactionPack;
 
 export const App: React.FC = () => {
   const [petProfile, setPetProfile] = useState<PetProfile | null>(null);
   const [, setSettings] = useState<AppSettings>(DEFAULT_APP_SETTINGS);
+  const [snapshot, setSnapshot] = useState<SimulationSnapshot | null>(null);
   const [squishTrigger, setSquishTrigger] = useState<number>(0);
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const [initError, setInitError] = useState<string | null>(null);
 
-  // Initialize persistence, pet profile, and settings
+  const coordinatorRef = useRef<SimulationCoordinator | null>(null);
+
+  // Initialize persistence, pet profile, settings, and simulation runtime
   useEffect(() => {
     let mounted = true;
     reportStage('app_mounted');
@@ -41,16 +52,37 @@ export const App: React.FC = () => {
         const autostart = await checkAutostartEnabled();
         const alwaysOnTop = await getPetWindowAlwaysOnTop();
 
+        // Instantiate simulation coordinator
+        const coordinator = new SimulationCoordinator({
+          species,
+          lifeConfig,
+          reactionPack,
+          onSnapshotChange: (newSnapshot) => {
+            if (mounted) {
+              setSnapshot(newSnapshot);
+            }
+          },
+          onSquishImpulse: () => {
+            if (mounted) {
+              setSquishTrigger((prev) => prev + 1);
+            }
+          },
+        });
+
+        coordinatorRef.current = coordinator;
+        const initialSnapshot = await coordinator.initialize(profile.id);
+
         if (mounted) {
           setPetProfile(profile);
+          setSnapshot(initialSnapshot);
           setSettings({
             ...loadedSettings,
             autostart,
             alwaysOnTop,
           });
           reportStage(
-            'persistence_init_success',
-            `pet: ${profile.name} (${profile.speciesId}), autostart: ${autostart}, alwaysOnTop: ${alwaysOnTop}`
+            'simulation_bootstrap_success',
+            `pet: ${profile.name} (${profile.speciesId}), mood: ${initialSnapshot.mood}`
           );
         }
       } catch (err) {
@@ -79,6 +111,10 @@ export const App: React.FC = () => {
       if (unlistenTray) {
         unlistenTray();
       }
+      if (coordinatorRef.current) {
+        coordinatorRef.current.destroy().catch(console.error);
+        coordinatorRef.current = null;
+      }
     };
   }, []);
 
@@ -88,6 +124,9 @@ export const App: React.FC = () => {
       updatePetLastSeen(petProfile.id).catch((err) =>
         console.error('Failed to update pet last seen:', err)
       );
+    }
+    if (coordinatorRef.current) {
+      coordinatorRef.current.performInteraction('poke').catch(console.error);
     }
   }, [petProfile]);
 
@@ -119,10 +158,14 @@ export const App: React.FC = () => {
 
   return (
     <div className="app-container">
-      <ReactionBubble trigger={squishTrigger} />
+      <ReactionBubble
+        trigger={squishTrigger}
+        speech={snapshot?.speech}
+      />
 
       <CreatureRenderer
         species={species}
+        mood={snapshot?.mood || 'content'}
         squishTrigger={squishTrigger}
         isHovered={isHovered}
         onHoverChange={setIsHovered}

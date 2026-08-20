@@ -1,0 +1,108 @@
+{
+  "schemaVersion": "1.0.0",
+  "speciesId": "gloop",
+  "decayRatesAwakePerHour": {
+    "satiety": 5.0,
+    "energy": 4.5,
+    "fun": 5.5,
+    "social": 5.0
+  },
+  "decayRatesAsleepPerHour": {
+    "satiety": 2.0,
+    "energyRecovery": 12.5,
+    "fun": 1.5,
+    "social": 1.5
+  },
+  "thresholds": {
+    "criticalLow": 15,
+    "low": 30,
+    "high": 70,
+    "satisfied": 85
+  },
+  "sleepParameters": {
+    "tiredEnergyThreshold": 25,
+    "restedEnergyThreshold": 85,
+    "minSleepDurationMs": 1800000
+  },
+  "decisionIntervalMs": {
+    "min": 6000,
+    "max": 16000
+  },
+  "speechCooldownMs": 120000,
+  "temperamentModifiers": {
+    "curious": {
+      "daydream": 1.6,
+      "inspect_something": 1.7,
+      "look_around": 1.4
+    },
+    "bouncy": {
+      "bounce": 1.8,
+      "stretch": 1.3,
+      "self_play": 1.5
+    },
+    "affectionate": {
+      "seek_attention": 1.6,
+      "hum": 1.4
+    },
+    "spontaneous": {
+      "daydream": 1.4,
+      "bounce": 1.3,
+      "inspect_something": 1.3
+    }
+  },
+  "activityWeights": {
+    "idle": 20,
+    "look_around": 15,
+    "stretch": 10,
+    "bounce": 15,
+    "hum": 10,
+    "daydream": 15,
+    "self_play": 12,
+    "inspect_something": 14,
+    "seek_attention": 10,
+    "complain_hungry": 12,
+    "complain_bored": 10,
+    "complain_lonely": 10,
+    "yawn": 8,
+    "nap": 10,
+    "celebrate": 5,
+    "sulk": 5
+  },
+  "interactionEffects": {
+    "feed": {
+      "satietyDelta": 25,
+      "funDelta": 3,
+      "socialDelta": 2,
+      "fullThreshold": 92
+    },
+    "pet": {
+      "socialDelta": 18,
+      "funDelta": 5,
+      "cooldownMs": 4000
+    },
+    "play": {
+      "funDelta": 28,
+      "socialDelta": 10,
+      "energyDelta": -12,
+      "satietyDelta": -6,
+      "minEnergyRequired": 18
+    },
+    "poke": {
+      "funDelta": 1,
+      "repeatedPokeThresholdMs": 4000,
+      "repeatedPokeCountAnnoy": 3
+    },
+    "sleep": {
+      "allowed": true
+    },
+    "wake": {
+      "allowed": true,
+      "reluctantEnergyThreshold": 20
+    }
+  },
+  "returnIntervalsMs": {
+    "shortMs": 900000,
+    "mediumMs": 10800000,
+    "longMs": 86400000
+  }
+}

@@ -4,6 +4,7 @@ import { PET_SIZE_PRESETS } from '../desktop/petSizes';
 
 export interface CompanionMenuProps {
   settings: AppSettings;
+  onOpenCare: () => void;
   onToggleAlwaysOnTop: () => void;
   onChangeSizePreset: (preset: PetSizePreset) => void;
   onToggleAutostart: () => void;
@@ -14,6 +15,7 @@ export interface CompanionMenuProps {
 
 export const CompanionMenu: React.FC<CompanionMenuProps> = ({
   settings,
+  onOpenCare,
   onToggleAlwaysOnTop,
   onChangeSizePreset,
   onToggleAutostart,
@@ -24,6 +26,17 @@ export const CompanionMenu: React.FC<CompanionMenuProps> = ({
   return (
     <div className="companion-menu" role="menu" aria-label="Companion Controls">
       <div className="menu-header">Companion Menu</div>
+
+      <button
+        className="menu-item action-item care-entry-item"
+        role="menuitem"
+        onClick={onOpenCare}
+      >
+        <span className="care-entry-title">💖 Care for Gloop</span>
+        <span className="care-entry-arrow">→</span>
+      </button>
+
+      <div className="menu-divider" />
 
       <button
         className="menu-item toggle-item"

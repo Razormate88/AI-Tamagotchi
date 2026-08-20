@@ -23,6 +23,7 @@ describe('GloopGraphics', () => {
       squishVelocity: 0,
       pupilOffsetX: 0,
       pupilOffsetY: 0,
+      mood: 'content',
     };
 
     drawGloop(g, colors, anim);
@@ -31,5 +32,9 @@ describe('GloopGraphics', () => {
     const bounds = g.bounds;
     expect(bounds.width).toBeGreaterThan(50);
     expect(bounds.height).toBeGreaterThan(50);
+
+    // Verify asleep rendering
+    drawGloop(g, colors, { ...anim, mood: 'asleep' });
+    expect(g.context.instructions.length).toBeGreaterThan(0);
   });
 });

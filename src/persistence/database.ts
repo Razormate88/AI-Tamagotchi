@@ -27,6 +27,40 @@ const MIGRATIONS = [
       );
     `,
   },
+  {
+    version: 2,
+    sql: `
+      CREATE TABLE IF NOT EXISTS pet_state (
+        pet_id TEXT PRIMARY KEY,
+        satiety REAL NOT NULL,
+        energy REAL NOT NULL,
+        fun REAL NOT NULL,
+        social REAL NOT NULL,
+        sleep_state TEXT NOT NULL,
+        current_activity TEXT NOT NULL,
+        activity_started_at INTEGER NOT NULL,
+        activity_duration_ms INTEGER NOT NULL,
+        simulation_updated_at INTEGER NOT NULL,
+        last_interaction_at INTEGER NOT NULL,
+        last_speech_at INTEGER NOT NULL,
+        total_awake_ms INTEGER NOT NULL,
+        total_asleep_ms INTEGER NOT NULL,
+        rng_state INTEGER NOT NULL,
+        revision INTEGER NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS pet_life_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        pet_id TEXT NOT NULL,
+        event_type TEXT NOT NULL,
+        occurred_at INTEGER NOT NULL,
+        importance REAL NOT NULL,
+        payload_json TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_life_events_pet_time ON pet_life_events (pet_id, occurred_at);
+    `,
+  },
 ];
 
 /**

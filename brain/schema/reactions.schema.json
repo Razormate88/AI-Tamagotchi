@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Razormate88/AI-Tamagotchi/main/brain/schema/reactions.schema.json",
+  "title": "SpeciesReactionPack",
+  "description": "Public, version-controlled repository of companion reaction dialog lines, thought bubbles, and interaction responses.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "speciesId",
+    "pools"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "speciesId": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "pools": {
+      "type": "object",
+      "required": [
+        "interaction.feed",
+        "interaction.feed_full",
+        "interaction.pet",
+        "interaction.play",
+        "interaction.play_tired",
+        "interaction.poke",
+        "interaction.poke_repeated",
+        "interaction.sleep",
+        "interaction.wake",
+        "needs.hungry",
+        "needs.tired",
+        "needs.bored",
+        "needs.lonely",
+        "activity.daydream",
+        "activity.self_play",
+        "activity.seek_attention",
+        "activity.yawn",
+        "return.short",
+        "return.medium",
+        "return.long",
+        "return.very_long"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "minItems": 1
+      }
+    }
+  },
+  "additionalProperties": false
+}

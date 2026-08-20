@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Razormate88/AI-Tamagotchi/main/brain/schema/life.schema.json",
+  "title": "SpeciesLifeBlueprint",
+  "description": "Public, version-controlled definition of baseline species life parameters, decay rates, behaviors, and interaction tuning.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "speciesId",
+    "decayRatesAwakePerHour",
+    "decayRatesAsleepPerHour",
+    "thresholds",
+    "sleepParameters",
+    "decisionIntervalMs",
+    "speechCooldownMs",
+    "temperamentModifiers",
+    "activityWeights",
+    "interactionEffects",
+    "returnIntervalsMs"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "speciesId": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "decayRatesAwakePerHour": {
+      "type": "object",
+      "required": ["satiety", "energy", "fun", "social"],
+      "properties": {
+        "satiety": { "type": "number", "minimum": 0, "maximum": 50 },
+        "energy": { "type": "number", "minimum": 0, "maximum": 50 },
+        "fun": { "type": "number", "minimum": 0, "maximum": 50 },
+        "social": { "type": "number", "minimum": 0, "maximum": 50 }
+      },
+      "additionalProperties": false
+    },
+    "decayRatesAsleepPerHour": {
+      "type": "object",
+      "required": ["satiety", "energyRecovery", "fun", "social"],
+      "properties": {
+        "satiety": { "type": "number", "minimum": 0, "maximum": 50 },
+        "energyRecovery": { "type": "number", "minimum": 0, "maximum": 50 },
+        "fun": { "type": "number", "minimum": 0, "maximum": 50 },
+        "social": { "type": "number", "minimum": 0, "maximum": 50 }
+      },
+      "additionalProperties": false
+    },
+    "thresholds": {
+      "type": "object",
+      "required": ["criticalLow", "low", "high", "satisfied"],
+      "properties": {
+        "criticalLow": { "type": "number", "minimum": 0, "maximum": 100 },
+        "low": { "type": "number", "minimum": 0, "maximum": 100 },
+        "high": { "type": "number", "minimum": 0, "maximum": 100 },
+        "satisfied": { "type": "number", "minimum": 0, "maximum": 100 }
+      },
+      "additionalProperties": false
+    },
+    "sleepParameters": {
+      "type": "object",
+      "required": ["tiredEnergyThreshold", "restedEnergyThreshold", "minSleepDurationMs"],
+      "properties": {
+        "tiredEnergyThreshold": { "type": "number", "minimum": 0, "maximum": 100 },
+        "restedEnergyThreshold": { "type": "number", "minimum": 0, "maximum": 100 },
+        "minSleepDurationMs": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "decisionIntervalMs": {
+      "type": "object",
+      "required": ["min", "max"],
+      "properties": {
+        "min": { "type": "number", "minimum": 1000 },
+        "max": { "type": "number", "minimum": 1000 }
+      },
+      "additionalProperties": false
+    },
+    "speechCooldownMs": {
+      "type": "number",
+      "minimum": 1000
+    },
+    "temperamentModifiers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "number"
+        }
+      }
+    },
+    "activityWeights": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0
+      }
+    },
+    "interactionEffects": {
+      "type": "object",
+      "required": ["feed", "pet", "play", "poke", "sleep", "wake"],
+      "properties": {
+        "feed": {
+          "type": "object",
+          "required": ["satietyDelta", "funDelta", "socialDelta", "fullThreshold"],
+          "properties": {
+            "satietyDelta": { "type": "number" },
+            "funDelta": { "type": "number" },
+            "socialDelta": { "type": "number" },
+            "fullThreshold": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "pet": {
+          "type": "object",
+          "required": ["socialDelta", "funDelta", "cooldownMs"],
+          "properties": {
+            "socialDelta": { "type": "number" },
+            "funDelta": { "type": "number" },
+            "cooldownMs": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "play": {
+          "type": "object",
+          "required": ["funDelta", "socialDelta", "energyDelta", "satietyDelta", "minEnergyRequired"],
+          "properties": {
+            "funDelta": { "type": "number" },
+            "socialDelta": { "type": "number" },
+            "energyDelta": { "type": "number" },
+            "satietyDelta": { "type": "number" },
+            "minEnergyRequired": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "poke": {
+          "type": "object",
+          "required": ["funDelta", "repeatedPokeThresholdMs", "repeatedPokeCountAnnoy"],
+          "properties": {
+            "funDelta": { "type": "number" },
+            "repeatedPokeThresholdMs": { "type": "number" },
+            "repeatedPokeCountAnnoy": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "sleep": {
+          "type": "object",
+          "required": ["allowed"],
+          "properties": {
+            "allowed": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "wake": {
+          "type": "object",
+          "required": ["allowed", "reluctantEnergyThreshold"],
+          "properties": {
+            "allowed": { "type": "boolean" },
+            "reluctantEnergyThreshold": { "type": "number" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "returnIntervalsMs": {
+      "type": "object",
+      "required": ["shortMs", "mediumMs", "longMs"],
+      "properties": {
+        "shortMs": { "type": "number", "minimum": 0 },
+        "mediumMs": { "type": "number", "minimum": 0 },
+        "longMs": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
